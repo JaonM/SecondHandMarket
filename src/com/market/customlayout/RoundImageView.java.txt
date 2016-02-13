@@ -1,0 +1,179 @@
+package com.market.customlayout;
+
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.widget.ImageView;
+import com.example.secondhandmarket.R.styleable;
+
+public class RoundImageView extends ImageView
+{
+  private int defaultColor = -1;
+  private int defaultHeight = 0;
+  private int defaultWidth = 0;
+  private int mBorderInsideColor = 0;
+  private int mBorderOutsideColor = 0;
+  private int mBorderThickness = 0;
+  private Context mContext;
+
+  public RoundImageView(Context paramContext)
+  {
+    super(paramContext);
+    this.mContext = paramContext;
+  }
+
+  public RoundImageView(Context paramContext, AttributeSet paramAttributeSet)
+  {
+    super(paramContext, paramAttributeSet);
+    this.mContext = paramContext;
+    setCustomAttributes(paramAttributeSet);
+  }
+
+  public RoundImageView(Context paramContext, AttributeSet paramAttributeSet, int paramInt)
+  {
+    super(paramContext, paramAttributeSet, paramInt);
+    this.mContext = paramContext;
+    setCustomAttributes(paramAttributeSet);
+  }
+
+  private void drawCircleBorder(Canvas paramCanvas, int paramInt1, int paramInt2)
+  {
+    Paint localPaint = new Paint();
+    localPaint.setAntiAlias(true);
+    localPaint.setFilterBitmap(true);
+    localPaint.setDither(true);
+    localPaint.setColor(paramInt2);
+    localPaint.setStyle(Paint.Style.STROKE);
+    localPaint.setStrokeWidth(this.mBorderThickness);
+    paramCanvas.drawCircle(this.defaultWidth / 2, this.defaultHeight / 2, paramInt1, localPaint);
+  }
+
+  private void setCustomAttributes(AttributeSet paramAttributeSet)
+  {
+    TypedArray localTypedArray = this.mContext.obtainStyledAttributes(paramAttributeSet, R.styleable.roundedimageview);
+    this.mBorderThickness = localTypedArray.getDimensionPixelSize(0, 0);
+    this.mBorderOutsideColor = localTypedArray.getColor(2, this.defaultColor);
+    this.mBorderInsideColor = localTypedArray.getColor(1, this.defaultColor);
+    localTypedArray.recycle();
+  }
+
+  public Bitmap getCroppedRoundBitmap(Bitmap paramBitmap, int paramInt)
+  {
+    int i = paramInt * 2;
+    int j = paramBitmap.getWidth();
+    int k = paramBitmap.getHeight();
+    Bitmap localBitmap1;
+    if (k > j)
+    {
+      localBitmap1 = Bitmap.createBitmap(paramBitmap, 0, (k - j) / 2, j, j);
+      if ((localBitmap1.getWidth() == i) && (localBitmap1.getHeight() == i))
+        break label252;
+    }
+    label252: for (Bitmap localBitmap2 = Bitmap.createScaledBitmap(localBitmap1, i, i, true); ; localBitmap2 = localBitmap1)
+    {
+      Bitmap localBitmap3 = Bitmap.createBitmap(localBitmap2.getWidth(), localBitmap2.getHeight(), Bitmap.Config.ARGB_8888);
+      Canvas localCanvas = new Canvas(localBitmap3);
+      Paint localPaint = new Paint();
+      Rect localRect = new Rect(0, 0, localBitmap2.getWidth(), localBitmap2.getHeight());
+      localPaint.setAntiAlias(true);
+      localPaint.setFilterBitmap(true);
+      localPaint.setDither(true);
+      localCanvas.drawARGB(0, 0, 0, 0);
+      localCanvas.drawCircle(localBitmap2.getWidth() / 2, localBitmap2.getHeight() / 2, localBitmap2.getWidth() / 2, localPaint);
+      localPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+      localCanvas.drawBitmap(localBitmap2, localRect, localRect, localPaint);
+      return localBitmap3;
+      if (k < j)
+      {
+        localBitmap1 = Bitmap.createBitmap(paramBitmap, (j - k) / 2, 0, k, k);
+        break;
+      }
+      localBitmap1 = paramBitmap;
+      break;
+    }
+  }
+
+  protected void onDraw(Canvas paramCanvas)
+  {
+    Drawable localDrawable = getDrawable();
+    if (localDrawable == null);
+    Bitmap localBitmap1;
+    do
+    {
+      do
+      {
+        do
+          return;
+        while ((getWidth() == 0) || (getHeight() == 0));
+        measure(0, 0);
+      }
+      while (localDrawable.getClass() == NinePatchDrawable.class);
+      localBitmap1 = ((BitmapDrawable)localDrawable).getBitmap();
+    }
+    while (localBitmap1 == null);
+    Bitmap localBitmap2 = localBitmap1.copy(Bitmap.Config.ARGB_8888, true);
+    if (this.defaultWidth == 0)
+      this.defaultWidth = getWidth();
+    if (this.defaultHeight == 0)
+      this.defaultHeight = getHeight();
+    Log.v("defualt WANDH", this.defaultWidth + " " + this.defaultHeight);
+    Log.v("bitmap Width height", localBitmap1.getWidth() + " " + localBitmap1.getHeight());
+    if ((localBitmap2.getWidth() < this.defaultWidth) || (localBitmap2.getHeight() < this.defaultHeight))
+    {
+      Log.v("draw", "default draw");
+      super.onDraw(paramCanvas);
+      return;
+    }
+    int j;
+    if ((this.mBorderInsideColor != this.defaultColor) && (this.mBorderOutsideColor != this.defaultColor))
+    {
+      if (this.defaultWidth < this.defaultHeight);
+      for (int n = this.defaultWidth; ; n = this.defaultHeight)
+      {
+        j = n / 2 - 2 * this.mBorderThickness;
+        drawCircleBorder(paramCanvas, j + this.mBorderThickness / 2, this.mBorderInsideColor);
+        drawCircleBorder(paramCanvas, j + this.mBorderThickness + this.mBorderThickness / 2, this.mBorderOutsideColor);
+        paramCanvas.drawBitmap(getCroppedRoundBitmap(localBitmap2, j), this.defaultWidth / 2 - j, this.defaultHeight / 2 - j, null);
+        return;
+      }
+    }
+    if ((this.mBorderInsideColor != this.defaultColor) && (this.mBorderOutsideColor == this.defaultColor))
+    {
+      if (this.defaultWidth < this.defaultHeight);
+      for (int m = this.defaultWidth; ; m = this.defaultHeight)
+      {
+        j = m / 2 - this.mBorderThickness;
+        drawCircleBorder(paramCanvas, j + this.mBorderThickness / 2, this.mBorderInsideColor);
+        break;
+      }
+    }
+    if ((this.mBorderInsideColor == this.defaultColor) && (this.mBorderOutsideColor != this.defaultColor))
+    {
+      if (this.defaultWidth < this.defaultHeight);
+      for (int k = this.defaultWidth; ; k = this.defaultHeight)
+      {
+        j = k / 2 - this.mBorderThickness;
+        drawCircleBorder(paramCanvas, j + this.mBorderThickness / 2, this.mBorderOutsideColor);
+        break;
+      }
+    }
+    if (this.defaultWidth < this.defaultHeight);
+    for (int i = this.defaultWidth; ; i = this.defaultHeight)
+    {
+      j = i / 2;
+      break;
+    }
+  }
+}

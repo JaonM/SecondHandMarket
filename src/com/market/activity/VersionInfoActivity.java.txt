@@ -1,0 +1,100 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.TextView;
+import com.market.util.Util;
+
+public class VersionInfoActivity extends Activity
+{
+  Button downloadBtn;
+  TextView versionInfoText;
+  TextView versionNumberText;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903106);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.versionNumberText = ((TextView)findViewById(2131034388));
+    this.versionInfoText = ((TextView)findViewById(2131034390));
+    this.downloadBtn = ((Button)findViewById(2131034391));
+    if (getIntent().getBooleanExtra("hasNew", false))
+    {
+      getActionBar().setTitle("新版介绍");
+      this.downloadBtn.setVisibility(0);
+      String str3 = getSharedPreferences("version", 0).getString("newVersion", "0.9.1");
+      this.versionNumberText.setText(str3);
+    }
+    String str2;
+    while (true)
+    {
+      str2 = getSharedPreferences("version", 0).getString("description", "无");
+      if (!str2.equals("无"))
+        break;
+      this.versionInfoText.setText("description");
+      this.downloadBtn.setOnClickListener(new View.OnClickListener()
+      {
+        public void onClick(View paramAnonymousView)
+        {
+          if (Util.getNetWorkType(VersionInfoActivity.this) == 1)
+          {
+            VersionInfoActivity.this.startService(new Intent("com.market.service.DOWNLOAD_SERVICE"));
+            VersionInfoActivity.this.downloadBtn.setClickable(false);
+            return;
+          }
+          new AlertDialog.Builder(VersionInfoActivity.this).setTitle("当前不是wifi环境").setMessage("继续下载吗").setPositiveButton("是", new DialogInterface.OnClickListener()
+          {
+            public void onClick(DialogInterface paramAnonymous2DialogInterface, int paramAnonymous2Int)
+            {
+              VersionInfoActivity.this.startService(new Intent("com.market.service.DOWNLOAD_SERVICE"));
+              VersionInfoActivity.this.downloadBtn.setClickable(false);
+            }
+          }).setNegativeButton("否", null).create().show();
+        }
+      });
+      return;
+      getActionBar().setTitle("版本介绍");
+      String str1 = getSharedPreferences("version", 0).getString("version", "0.9.1");
+      this.versionNumberText.setText(str1);
+    }
+    String[] arrayOfString = str2.split(";");
+    StringBuilder localStringBuilder = new StringBuilder();
+    for (int i = 0; ; i++)
+    {
+      if (i >= arrayOfString.length)
+      {
+        this.versionInfoText.setText(localStringBuilder.toString());
+        break;
+      }
+      localStringBuilder.append(i + 1 + "、");
+      localStringBuilder.append(arrayOfString[i]);
+      localStringBuilder.append("\n\r");
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+}

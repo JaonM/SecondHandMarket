@@ -1,0 +1,52 @@
+package com.market.model;
+
+import java.io.Serializable;
+
+public class Classfication
+  implements Serializable
+{
+  private static final long serialVersionUID = 6060904546013346691L;
+  private int classfication1Id;
+  private String classfication2Name;
+
+  public int getClassfication1Id()
+  {
+    return this.classfication1Id;
+  }
+
+  public String getClassfication1Name()
+  {
+    switch (this.classfication1Id)
+    {
+    default:
+      return null;
+    case 1:
+      return "学习用品";
+    case 2:
+      return "数码电器";
+    case 3:
+      return "闲置日用";
+    case 4:
+      return "体育用品";
+    case 5:
+      return "衣鞋配饰";
+    case 6:
+    }
+    return "其他";
+  }
+
+  public String getClassfication2Name()
+  {
+    return this.classfication2Name;
+  }
+
+  public void setClassfication1Id(int paramInt)
+  {
+    this.classfication1Id = paramInt;
+  }
+
+  public void setClassfication2Name(String paramString)
+  {
+    this.classfication2Name = paramString;
+  }
+}

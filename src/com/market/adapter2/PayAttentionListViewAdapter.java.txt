@@ -1,0 +1,75 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.market.model.User;
+import com.market.util.HandleBitmap;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PayAttentionListViewAdapter extends BaseAdapter
+{
+  Context mContext;
+  private List<User> userList;
+
+  public PayAttentionListViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    this.userList = new ArrayList();
+  }
+
+  public int getCount()
+  {
+    return this.userList.size();
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return this.userList.get(paramInt);
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public List<User> getList()
+  {
+    return this.userList;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903076, null);
+    TextView localTextView1 = (TextView)localView.findViewById(2131034292);
+    TextView localTextView2 = (TextView)localView.findViewById(2131034293);
+    localTextView1.setText(((User)this.userList.get(paramInt)).getNickName());
+    localTextView2.setText(((User)this.userList.get(paramInt)).getSelfIntroduction());
+    ImageView localImageView = (ImageView)localView.findViewById(2131034291);
+    try
+    {
+      Bitmap localBitmap = HandleBitmap.convertBitmap(new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/" + ((User)this.userList.get(paramInt)).getId()), 100);
+      if (localBitmap != null)
+        localImageView.setImageBitmap(localBitmap);
+      return localView;
+    }
+    catch (OutOfMemoryError localOutOfMemoryError)
+    {
+      localOutOfMemoryError.printStackTrace();
+      return localView;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+    return localView;
+  }
+}

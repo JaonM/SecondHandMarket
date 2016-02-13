@@ -1,0 +1,94 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.market.util.Util;
+import java.util.HashMap;
+import java.util.Map;
+import org.json.JSONObject;
+
+public class UserInfoActivity extends Activity
+{
+  TextView nameText;
+  TextView phoneText;
+  int userId;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903111);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.userId = getIntent().getIntExtra("userId", 0);
+    this.nameText = ((TextView)findViewById(2131034424));
+    this.phoneText = ((TextView)findViewById(2131034425));
+    new GetUserTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/UserServlet" });
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class GetUserTask extends AsyncTask<String, Void, String>
+  {
+    private GetUserTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("userId", String.valueOf(UserInfoActivity.this.userId));
+        String str = Util.postRequest(UserInfoActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          JSONObject localJSONObject = new JSONObject(paramString);
+          if (localJSONObject.getString("info").equals("success"))
+          {
+            String str1 = localJSONObject.getString("name");
+            String str2 = localJSONObject.getString("phone");
+            UserInfoActivity.this.nameText.setText(str1);
+            UserInfoActivity.this.phoneText.setText(str2);
+            return;
+          }
+          Toast.makeText(UserInfoActivity.this, "未找到该用户", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      Toast.makeText(UserInfoActivity.this, "链接服务器失败", 0).show();
+    }
+  }
+}

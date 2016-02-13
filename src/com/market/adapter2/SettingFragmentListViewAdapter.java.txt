@@ -1,0 +1,87 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.res.Resources;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
+import com.readystatesoftware.viewbadger.BadgeView;
+
+public class SettingFragmentListViewAdapter extends BaseAdapter
+{
+  Context mContext;
+  String[] titles = { "关于二手市场", "检查更新", "关于我们" };
+
+  public SettingFragmentListViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+  }
+
+  public int getCount()
+  {
+    return this.titles.length;
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return this.titles[paramInt];
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903105, null);
+    ((TextView)localView.findViewById(2131034386)).setText(this.titles[paramInt]);
+    TextView localTextView = (TextView)localView.findViewById(2131034387);
+    if ((paramInt == 0) && (this.mContext.getSharedPreferences("isFirst", 0).getBoolean("settingFragment", true)))
+    {
+      localTextView.setVisibility(0);
+      BadgeView localBadgeView3 = new BadgeView(this.mContext, localTextView);
+      localBadgeView3.setText("New");
+      localBadgeView3.setTextSize(14.0F);
+      localBadgeView3.setLayoutParams(new ViewGroup.LayoutParams(-2, -2));
+      localBadgeView3.setTextColor(-1);
+      localBadgeView3.setPadding(14, 14, 14, 14);
+      localBadgeView3.setBackgroundDrawable(this.mContext.getResources().getDrawable(2130837507));
+      localBadgeView3.setGravity(17);
+      localBadgeView3.show();
+    }
+    if ((paramInt == 1) && (this.mContext.getSharedPreferences("version", 0).getBoolean("hasNew", false)) && (!this.mContext.getSharedPreferences("version", 0).getBoolean("hasRead", false)))
+    {
+      localTextView.setVisibility(0);
+      BadgeView localBadgeView2 = new BadgeView(this.mContext, localTextView);
+      localBadgeView2.setLayoutParams(new ViewGroup.LayoutParams(-2, -2));
+      localBadgeView2.setTextColor(-1);
+      localBadgeView2.setPadding(14, 14, 14, 14);
+      localBadgeView2.setText("New");
+      localBadgeView2.setTextSize(14.0F);
+      localBadgeView2.setBackgroundDrawable(this.mContext.getResources().getDrawable(2130837507));
+      localBadgeView2.setGravity(17);
+      localBadgeView2.show();
+    }
+    if ((paramInt == 2) && (this.mContext.getSharedPreferences("isFirst", 0).getBoolean("aboutUs", true)))
+    {
+      localTextView.setVisibility(0);
+      BadgeView localBadgeView1 = new BadgeView(this.mContext, localTextView);
+      localBadgeView1.setLayoutParams(new ViewGroup.LayoutParams(-2, -2));
+      localBadgeView1.setTextColor(-1);
+      localBadgeView1.setPadding(14, 14, 14, 14);
+      localBadgeView1.setText("New");
+      localBadgeView1.setTextSize(14.0F);
+      localBadgeView1.setBackgroundDrawable(this.mContext.getResources().getDrawable(2130837507));
+      localBadgeView1.setGravity(17);
+      localBadgeView1.show();
+      this.mContext.getSharedPreferences("isFirst", 0).edit().putBoolean("aboutUs", false).commit();
+    }
+    return localView;
+  }
+}

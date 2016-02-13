@@ -1,0 +1,272 @@
+package com.market.privatespaceactivity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+import android.widget.Toast;
+import com.market.activity.ItemActivity;
+import com.market.adapter2.HavedOrderListViewAdapter;
+import com.market.model.Item;
+import com.market.util.Util;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class HavedOrderActivity extends Activity
+{
+  HavedOrderListViewAdapter adapter;
+  ListView listView;
+  int userId;
+
+  private OutputStream createImageCacheFile(int paramInt)
+  {
+    boolean bool = Environment.getExternalStorageState().equals("mounted");
+    Object localObject = null;
+    if (bool);
+    try
+    {
+      File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache");
+      if (!localFile1.exists())
+        localFile1.mkdirs();
+      File localFile2 = new File(localFile1.getCanonicalPath() + "/" + paramInt);
+      localFile2.createNewFile();
+      FileOutputStream localFileOutputStream = new FileOutputStream(localFile2);
+      localObject = localFileOutputStream;
+      return localObject;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+    return null;
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903083);
+    this.userId = getSharedPreferences("islogin", 0).getInt("userId", -1);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.listView = ((ListView)findViewById(2131034314));
+    this.adapter = new HavedOrderListViewAdapter(this);
+    this.listView.setAdapter(this.adapter);
+    this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        Intent localIntent = new Intent(HavedOrderActivity.this, ItemActivity.class);
+        localIntent.putExtra("item", (Serializable)HavedOrderActivity.this.adapter.getList().get(paramAnonymousInt));
+        HavedOrderActivity.this.startActivity(localIntent);
+      }
+    });
+    new GetDataTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/ItemServlet" });
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    try
+    {
+      Iterator localIterator = this.adapter.getList().iterator();
+      while (true)
+      {
+        if (!localIterator.hasNext())
+          return;
+        Item localItem = (Item)localIterator.next();
+        File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/" + "cache/" + localItem.getId());
+        if (localFile.exists())
+          localFile.delete();
+      }
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  public void onResume()
+  {
+    super.onResume();
+  }
+
+  private class GetDataTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private GetDataTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "havedOrder");
+        localHashMap.put("start", String.valueOf(0));
+        localHashMap.put("end", String.valueOf(1));
+        localHashMap.put("userId", String.valueOf(HavedOrderActivity.this.userId));
+        String str = Util.postRequest(HavedOrderActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          JSONObject localJSONObject1 = new JSONObject(paramString);
+          String str = localJSONObject1.getString("info");
+          JSONArray localJSONArray;
+          int i;
+          int j;
+          if (str.equals("success"))
+          {
+            localJSONArray = localJSONObject1.getJSONArray("result");
+            i = 0;
+            if (i >= localJSONArray.length())
+            {
+              j = 0;
+              label55: if (j < HavedOrderActivity.this.adapter.getList().size())
+                break label277;
+            }
+          }
+          while (true)
+          {
+            HavedOrderActivity.this.adapter.notifyDataSetChanged();
+            return;
+            Item localItem = new Item();
+            JSONObject localJSONObject2 = localJSONArray.getJSONObject(i);
+            localItem.setId(localJSONObject2.getInt("id"));
+            localItem.setName(localJSONObject2.getString("name"));
+            localItem.setPrice(localJSONObject2.getDouble("price"));
+            localItem.setDescription(localJSONObject2.getString("description"));
+            localItem.setPhotoCount(localJSONObject2.getInt("photoCount"));
+            localItem.setOwnerId(localJSONObject2.getInt("ownerId"));
+            localItem.setCollectCount(localJSONObject2.getInt("collectCount"));
+            localItem.setClassfication1(localJSONObject2.getString("classfication1"));
+            localItem.setClassfication2(localJSONObject2.getString("classfication2"));
+            localItem.setStatus(localJSONObject2.getInt("status"));
+            localItem.setPhotoPathOnServer(localJSONObject2.getString("photoPath").split(","));
+            localItem.setBuyerId(localJSONObject2.getInt("buyerId"));
+            HavedOrderActivity.this.adapter.getList().add(localItem);
+            i++;
+            break;
+            label277: HavedOrderActivity.GetImageTask localGetImageTask = new HavedOrderActivity.GetImageTask(HavedOrderActivity.this);
+            Integer[] arrayOfInteger = new Integer[1];
+            arrayOfInteger[0] = Integer.valueOf(j);
+            localGetImageTask.execute(arrayOfInteger);
+            j++;
+            break label55;
+            if (str.equals("fail"))
+              Toast.makeText(HavedOrderActivity.this, "不好意思,服务器出错了", 0).show();
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      Toast.makeText(HavedOrderActivity.this, "不好意思,服务器开了小差...内容无法显示了", 0).show();
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(HavedOrderActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("获取中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+
+  class GetImageTask extends AsyncTask<Integer, Void, Bitmap>
+  {
+    GetImageTask()
+    {
+    }
+
+    public Bitmap doInBackground(Integer[] paramArrayOfInteger)
+    {
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL("http://10.96.73.76:8080/SecondHandMarket/" + ((Item)HavedOrderActivity.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getPhotoPathOnServer()[0]).openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        byte[] arrayOfByte = new byte[1024];
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+        while (true)
+        {
+          int i = localInputStream.read(arrayOfByte);
+          if (i == -1)
+          {
+            localInputStream.close();
+            localByteArrayOutputStream.flush();
+            if (!new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache" + "/" + ((Item)HavedOrderActivity.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getId()).exists())
+            {
+              OutputStream localOutputStream = HavedOrderActivity.this.createImageCacheFile(((Item)HavedOrderActivity.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getId());
+              localOutputStream.write(localByteArrayOutputStream.toByteArray());
+              localOutputStream.close();
+            }
+            localByteArrayOutputStream.close();
+            localHttpURLConnection.disconnect();
+            return null;
+          }
+          localByteArrayOutputStream.write(arrayOfByte, 0, i);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(Bitmap paramBitmap)
+    {
+      HavedOrderActivity.this.adapter.notifyDataSetChanged();
+    }
+  }
+}

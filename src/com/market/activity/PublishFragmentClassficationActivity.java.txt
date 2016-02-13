@@ -1,0 +1,52 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import com.market.adapter2.PublishClassficationExpListAdapter;
+
+public class PublishFragmentClassficationActivity extends Activity
+{
+  ExpandableListView expListView;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903093);
+    this.expListView = ((ExpandableListView)findViewById(2131034354));
+    final PublishClassficationExpListAdapter localPublishClassficationExpListAdapter = new PublishClassficationExpListAdapter(this);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.expListView.setAdapter(localPublishClassficationExpListAdapter);
+    this.expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener()
+    {
+      public boolean onChildClick(ExpandableListView paramAnonymousExpandableListView, View paramAnonymousView, int paramAnonymousInt1, int paramAnonymousInt2, long paramAnonymousLong)
+      {
+        Intent localIntent = PublishFragmentClassficationActivity.this.getIntent();
+        localIntent.putExtra("group", localPublishClassficationExpListAdapter.getGroup(paramAnonymousInt1).toString());
+        localIntent.putExtra("child", localPublishClassficationExpListAdapter.getChild(paramAnonymousInt1, paramAnonymousInt2).toString());
+        PublishFragmentClassficationActivity.this.setResult(-1, localIntent);
+        PublishFragmentClassficationActivity.this.finish();
+        return false;
+      }
+    });
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+}

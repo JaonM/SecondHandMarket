@@ -1,0 +1,451 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore.Images.Media;
+import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+import android.widget.Toast;
+import com.market.adapter2.PrivateSpaceListViewAdapter;
+import com.market.privatespaceactivity.BeAttentionedActivity;
+import com.market.privatespaceactivity.ChangePhoneActivity;
+import com.market.privatespaceactivity.ChangeSelfIntroductionActivity;
+import com.market.privatespaceactivity.ChangeUserNameActivity;
+import com.market.privatespaceactivity.HavedOrderActivity;
+import com.market.privatespaceactivity.HavedPublishActivity;
+import com.market.privatespaceactivity.PayAttentionActivity;
+import com.market.util.CompressBitmap;
+import com.market.util.HandleBitmap;
+import com.market.util.Util;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.json.JSONObject;
+
+public class PrivateSpaceActivity extends Activity
+{
+  private static final int CAMERA = 1;
+  private static final int CHANGE_PHONE = 5;
+  private static final int CHANGE_SELF_INTRODUCTION = 4;
+  private static final int CHANGE_USERNAME = 3;
+  private static final int GALLERY = 2;
+  PrivateSpaceListViewAdapter adapter;
+  private String fileName;
+  int heightPixel;
+  ListView listView;
+  int widthPixel;
+
+  private void callSystemCamera()
+  {
+    if (!Environment.getExternalStorageState().equals("mounted"))
+    {
+      System.out.println("无法访问sd卡");
+      return;
+    }
+    File localFile = new File(Environment.getExternalStorageDirectory().getPath() + "/SecondHandMarket");
+    if (!localFile.exists())
+      localFile.mkdirs();
+    this.fileName = (localFile.getPath() + "/" + UUID.randomUUID().toString() + ".jpg");
+    Intent localIntent = new Intent("android.media.action.IMAGE_CAPTURE");
+    localIntent.putExtra("android.intent.extra.videoQuality", 1);
+    localIntent.putExtra("output", Uri.fromFile(new File(this.fileName)));
+    startActivityForResult(localIntent, 1);
+  }
+
+  private void callSystemGallery()
+  {
+    startActivityForResult(new Intent("android.intent.action.PICK", MediaStore.Images.Media.EXTERNAL_CONTENT_URI), 2);
+  }
+
+  private void getOverflowMenu()
+  {
+    try
+    {
+      ViewConfiguration localViewConfiguration = ViewConfiguration.get(this);
+      Field localField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+      localField.setAccessible(true);
+      localField.setBoolean(localViewConfiguration, false);
+      return;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+
+  public void onActivityResult(int paramInt1, int paramInt2, Intent paramIntent)
+  {
+    super.onActivityResult(paramInt1, paramInt2, paramIntent);
+    switch (paramInt1)
+    {
+    default:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    }
+    do
+    {
+      do
+      {
+        do
+        {
+          do
+          {
+            do
+              return;
+            while (paramInt2 != -1);
+            UploadUserImage localUploadUserImage = new UploadUserImage(null);
+            String[] arrayOfString2 = new String[1];
+            arrayOfString2[0] = this.fileName;
+            localUploadUserImage.execute(arrayOfString2);
+            return;
+          }
+          while ((paramInt2 != -1) || (paramIntent == null));
+          Uri localUri = paramIntent.getData();
+          String[] arrayOfString1 = { "_data" };
+          Cursor localCursor = getContentResolver().query(localUri, arrayOfString1, null, null, null);
+          localCursor.moveToFirst();
+          String str4 = localCursor.getString(localCursor.getColumnIndex(arrayOfString1[0]));
+          localCursor.close();
+          new UploadUserImage(null).execute(new String[] { str4 });
+          return;
+        }
+        while ((paramInt2 != -1) || (paramIntent == null));
+        SharedPreferences.Editor localEditor3 = getSharedPreferences("islogin", 0).edit();
+        String str3 = paramIntent.getStringExtra("userName");
+        localEditor3.putString("userName", str3);
+        localEditor3.commit();
+        this.adapter.getArray()[0] = str3;
+        this.adapter.notifyDataSetChanged();
+        return;
+      }
+      while ((paramInt2 != -1) || (paramIntent == null));
+      SharedPreferences.Editor localEditor2 = getSharedPreferences("islogin", 0).edit();
+      String str2 = paramIntent.getStringExtra("selfIntroduction");
+      localEditor2.putString("selfIntroduction", str2);
+      localEditor2.commit();
+      this.adapter.getArray()[2] = str2;
+      this.adapter.notifyDataSetChanged();
+      return;
+    }
+    while ((paramInt2 != -1) || (paramIntent == null));
+    SharedPreferences.Editor localEditor1 = getSharedPreferences("islogin", 0).edit();
+    String str1 = paramIntent.getStringExtra("phone");
+    localEditor1.putString("phone", str1);
+    localEditor1.commit();
+    this.adapter.getArray()[3] = str1;
+    this.adapter.notifyDataSetChanged();
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903077);
+    this.listView = ((ListView)findViewById(2131034294));
+    this.adapter = new PrivateSpaceListViewAdapter(this);
+    this.listView.setAdapter(this.adapter);
+    getOverflowMenu();
+    DisplayMetrics localDisplayMetrics = new DisplayMetrics();
+    getWindowManager().getDefaultDisplay().getMetrics(localDisplayMetrics);
+    this.widthPixel = localDisplayMetrics.widthPixels;
+    this.heightPixel = localDisplayMetrics.heightPixels;
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        switch (paramAnonymousInt)
+        {
+        case 2:
+        case 5:
+        default:
+          return;
+        case 0:
+          new AlertDialog.Builder(PrivateSpaceActivity.this).setItems(new String[] { "拍照", "相册" }, new DialogInterface.OnClickListener()
+          {
+            public void onClick(DialogInterface paramAnonymous2DialogInterface, int paramAnonymous2Int)
+            {
+              switch (paramAnonymous2Int)
+              {
+              default:
+                return;
+              case 0:
+                PrivateSpaceActivity.this.callSystemCamera();
+                return;
+              case 1:
+              }
+              PrivateSpaceActivity.this.callSystemGallery();
+            }
+          }).create().show();
+          return;
+        case 1:
+          Intent localIntent7 = new Intent(PrivateSpaceActivity.this, ChangeUserNameActivity.class);
+          PrivateSpaceActivity.this.startActivityForResult(localIntent7, 3);
+          return;
+        case 3:
+          Intent localIntent6 = new Intent(PrivateSpaceActivity.this, ChangeSelfIntroductionActivity.class);
+          PrivateSpaceActivity.this.startActivityForResult(localIntent6, 4);
+          return;
+        case 4:
+          Intent localIntent5 = new Intent(PrivateSpaceActivity.this, ChangePhoneActivity.class);
+          PrivateSpaceActivity.this.startActivityForResult(localIntent5, 5);
+          return;
+        case 6:
+          Intent localIntent4 = new Intent(PrivateSpaceActivity.this, PayAttentionActivity.class);
+          localIntent4.putExtra("payAttentionUser", "self");
+          PrivateSpaceActivity.this.startActivity(localIntent4);
+          return;
+        case 7:
+          Intent localIntent3 = new Intent(PrivateSpaceActivity.this, BeAttentionedActivity.class);
+          localIntent3.putExtra("beAttentionedUser", "self");
+          PrivateSpaceActivity.this.startActivity(localIntent3);
+          return;
+        case 8:
+          Intent localIntent2 = new Intent(PrivateSpaceActivity.this, HavedPublishActivity.class);
+          localIntent2.putExtra("havedPublishUser", "self");
+          PrivateSpaceActivity.this.startActivity(localIntent2);
+          return;
+        case 9:
+        }
+        Intent localIntent1 = new Intent(PrivateSpaceActivity.this, HavedOrderActivity.class);
+        PrivateSpaceActivity.this.startActivity(localIntent1);
+      }
+    });
+  }
+
+  public boolean onCreateOptionsMenu(Menu paramMenu)
+  {
+    new MenuInflater(this).inflate(2131361796, paramMenu);
+    return super.onCreateOptionsMenu(paramMenu);
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    case 2131034433:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      startActivity(new Intent(this, MainActivity.class));
+      continue;
+      SharedPreferences.Editor localEditor = getSharedPreferences("islogin", 0).edit();
+      localEditor.putBoolean("isLogin", false);
+      localEditor.clear();
+      localEditor.commit();
+      MainActivity.isLogin = false;
+      try
+      {
+        File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/user");
+        if (!localFile.exists())
+          localFile.delete();
+        finish();
+      }
+      catch (Exception localException)
+      {
+        while (true)
+          localException.printStackTrace();
+      }
+    }
+  }
+
+  public void onResume()
+  {
+    super.onResume();
+    new UpdateTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/UserServlet" });
+  }
+
+  private class UpdateTask extends AsyncTask<String, Void, String>
+  {
+    private UpdateTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        int i = PrivateSpaceActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0);
+        if (i == 0)
+          return null;
+        localHashMap.put("userId", String.valueOf(i));
+        String str2 = Util.postRequest(PrivateSpaceActivity.this, paramArrayOfString[0], localHashMap);
+        str1 = str2;
+        return str1;
+      }
+      catch (Exception localException)
+      {
+        while (true)
+        {
+          localException.printStackTrace();
+          String str1 = null;
+        }
+      }
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null);
+      try
+      {
+        JSONObject localJSONObject = new JSONObject(paramString);
+        if (localJSONObject.getString("info").equals("success"))
+        {
+          String str1 = localJSONObject.getString("attentionCount");
+          String str2 = localJSONObject.getString("beAttentionedCount");
+          String str3 = localJSONObject.getString("publishCount");
+          String str4 = localJSONObject.getString("orderCount");
+          PrivateSpaceActivity.this.adapter.getArray()[5] = str1;
+          PrivateSpaceActivity.this.adapter.getArray()[6] = str2;
+          PrivateSpaceActivity.this.adapter.getArray()[7] = str3;
+          PrivateSpaceActivity.this.adapter.getArray()[8] = str4;
+          PrivateSpaceActivity.this.adapter.notifyDataSetChanged();
+        }
+        return;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+    }
+  }
+
+  private class UploadUserImage extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private UploadUserImage()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      String str = null;
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL("http://10.96.73.76:8080/SecondHandMarket/UpdateUserServlet?key=image&value=&userId=" + String.valueOf(PrivateSpaceActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0))).openConnection();
+        localHttpURLConnection.setRequestMethod("POST");
+        localHttpURLConnection.setDoInput(true);
+        localHttpURLConnection.setDoOutput(true);
+        localHttpURLConnection.setUseCaches(false);
+        localHttpURLConnection.setRequestProperty("Charset", "UTF-8");
+        localHttpURLConnection.setRequestProperty("connection", "Keep-Alive");
+        localHttpURLConnection.setRequestProperty("Content-Type", "multipart/form-data");
+        Bitmap localBitmap1 = HandleBitmap.convertBitmap(new File(paramArrayOfString[0]), 300);
+        Bitmap localBitmap2 = HandleBitmap.rotateBitmap(HandleBitmap.readPictureDegree(paramArrayOfString[0]), localBitmap1);
+        ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+        int i = localBitmap2.getByteCount() / 1024;
+        str = null;
+        if (i > 100)
+        {
+          localBitmap2.recycle();
+          CompressBitmap.getSmallBitmap(paramArrayOfString[0], PrivateSpaceActivity.this.widthPixel, PrivateSpaceActivity.this.heightPixel).compress(Bitmap.CompressFormat.JPEG, 60, localByteArrayOutputStream);
+        }
+        while (true)
+        {
+          localBitmap1.recycle();
+          localByteArrayOutputStream.flush();
+          OutputStream localOutputStream = localHttpURLConnection.getOutputStream();
+          localOutputStream.write(localByteArrayOutputStream.toByteArray());
+          localOutputStream.flush();
+          localOutputStream.close();
+          str = new BufferedReader(new InputStreamReader(localHttpURLConnection.getInputStream())).readLine();
+          FileOutputStream localFileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/user");
+          localFileOutputStream.write(localByteArrayOutputStream.toByteArray());
+          localFileOutputStream.flush();
+          localFileOutputStream.close();
+          localByteArrayOutputStream.close();
+          return str;
+          localBitmap2.compress(Bitmap.CompressFormat.JPEG, 60, localByteArrayOutputStream);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return str;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+      {
+        try
+        {
+          String str = new JSONObject(paramString).getString("info");
+          if (str.equals("success"))
+          {
+            PrivateSpaceActivity.this.adapter.notifyDataSetChanged();
+            this.progressDialog.dismiss();
+            return;
+          }
+          if (!str.equals("fail"))
+            return;
+          Toast.makeText(PrivateSpaceActivity.this, "链接服务器失败", 0).show();
+          this.progressDialog.dismiss();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      }
+      else
+      {
+        Toast.makeText(PrivateSpaceActivity.this, "服务器开小差了...", 0).show();
+        this.progressDialog.dismiss();
+      }
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(PrivateSpaceActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("上传图片中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+}

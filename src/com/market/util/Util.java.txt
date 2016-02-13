@@ -1,0 +1,178 @@
+package com.market.util;
+
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.util.Log;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
+
+public class Util
+{
+  public static final String AD = "/AdvertisementServlet";
+  public static final String BASE_URL = "http://10.96.73.76:8080/SecondHandMarket";
+  public static final String CLASSFICATION = "/ClassficationServlet";
+  public static final String COLLECT = "/CollectServlet";
+  public static final String ITEM = "/ItemServlet";
+  public static final String LOGIN = "/LoginServlet";
+  public static final String MESSAGE = "/MessageServlet";
+  public static final String PUBLISH = "/PublishServlet";
+  public static final String PULLING = "/PullingServlet";
+  public static final String RELATIONSHIP = "/RelationshipServlet";
+  public static final String Regist = "/RegistServlet";
+  public static final String SEARCH = "/SearchServlet";
+  public static final String UPDATE_USER = "/UpdateUserServlet";
+  public static final String USER = "/UserServlet";
+  public static final String VERSION = "/VersionServlet";
+
+  public static Bitmap ArrayToBitmap(byte[] paramArrayOfByte)
+  {
+    if (paramArrayOfByte.length != 0)
+      return BitmapFactory.decodeByteArray(paramArrayOfByte, 0, paramArrayOfByte.length);
+    return null;
+  }
+
+  public static byte[] BitmaoToArray(Bitmap paramBitmap)
+  {
+    ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+    paramBitmap.compress(Bitmap.CompressFormat.PNG, 100, localByteArrayOutputStream);
+    return localByteArrayOutputStream.toByteArray();
+  }
+
+  public static int getNetWorkType(Context paramContext)
+  {
+    NetworkInfo localNetworkInfo = ((ConnectivityManager)paramContext.getSystemService("connectivity")).getActiveNetworkInfo();
+    if (localNetworkInfo != null)
+      return localNetworkInfo.getType();
+    return -1;
+  }
+
+  public static String getProxy(Context paramContext)
+  {
+    Cursor localCursor = paramContext.getContentResolver().query(Uri.parse("content://telephony/carriers/preferapn"), new String[] { "apn", "proxy", "port" }, null, null, null);
+    String str1 = null;
+    String str4;
+    if (localCursor != null)
+    {
+      boolean bool1 = localCursor.moveToFirst();
+      str1 = null;
+      if (bool1)
+      {
+        String str2 = localCursor.getString(localCursor.getColumnIndex("apn"));
+        String str3 = localCursor.getString(localCursor.getColumnIndex("proxy"));
+        if (str3 == null)
+        {
+          int i = str3.length();
+          str1 = null;
+          if (i < 0);
+        }
+        else
+        {
+          str4 = str2.toUpperCase();
+          Log.v("apn+proxy", str4 + str3);
+          if ((!str4.equals("CMWAP")) && (!str4.equals("UNIWAP")) && (!str4.equals("3GWAP")))
+            break label179;
+          str1 = "10.0.0.172";
+        }
+      }
+    }
+    while (true)
+    {
+      localCursor.close();
+      return str1;
+      label179: boolean bool2 = str4.equals("CTWAP");
+      str1 = null;
+      if (bool2)
+        str1 = "10.0.0.200";
+    }
+  }
+
+  public static String getRequest(Context paramContext, final String paramString)
+    throws Exception
+  {
+    final DefaultHttpClient localDefaultHttpClient = new DefaultHttpClient();
+    localDefaultHttpClient.getParams().setParameter("http.connection.timeout", Integer.valueOf(30000));
+    localDefaultHttpClient.getParams().setParameter("http.socket.timeout", Integer.valueOf(30000));
+    FutureTask localFutureTask = new FutureTask(new Callable()
+    {
+      public String call()
+        throws Exception
+      {
+        if ((Util.getNetWorkType(Util.this) == 0) && (Util.getNetWorkType(Util.this) != -1) && (Util.getProxy(Util.this) != null))
+        {
+          HttpHost localHttpHost = new HttpHost("10.0.0.172", 80);
+          localDefaultHttpClient.getParams().setParameter("http.route.default-proxy", localHttpHost);
+        }
+        HttpGet localHttpGet = new HttpGet(paramString);
+        HttpResponse localHttpResponse = localDefaultHttpClient.execute(localHttpGet);
+        if (localHttpResponse.getStatusLine().getStatusCode() == 200)
+          return EntityUtils.toString(localHttpResponse.getEntity(), "UTF-8");
+        return null;
+      }
+    });
+    new Thread(localFutureTask).start();
+    return (String)localFutureTask.get();
+  }
+
+  public static String postRequest(Context paramContext, String paramString, final Map<String, String> paramMap)
+    throws Exception
+  {
+    final DefaultHttpClient localDefaultHttpClient = new DefaultHttpClient();
+    localDefaultHttpClient.getParams().setParameter("http.connection.timeout", Integer.valueOf(30000));
+    localDefaultHttpClient.getParams().setParameter("http.socket.timeout", Integer.valueOf(30000));
+    FutureTask localFutureTask = new FutureTask(new Callable()
+    {
+      public String call()
+        throws Exception
+      {
+        HttpPost localHttpPost = new HttpPost(Util.this);
+        ArrayList localArrayList;
+        Iterator localIterator;
+        if (paramMap != null)
+        {
+          localArrayList = new ArrayList();
+          localIterator = paramMap.keySet().iterator();
+        }
+        while (true)
+        {
+          if (!localIterator.hasNext())
+          {
+            localHttpPost.setEntity(new UrlEncodedFormEntity(localArrayList, "utf-8"));
+            HttpResponse localHttpResponse = localDefaultHttpClient.execute(localHttpPost);
+            if (localHttpResponse.getStatusLine().getStatusCode() != 200)
+              break;
+            return EntityUtils.toString(localHttpResponse.getEntity(), "utf-8");
+          }
+          String str = (String)localIterator.next();
+          localArrayList.add(new BasicNameValuePair(str, (String)paramMap.get(str)));
+        }
+        return null;
+      }
+    });
+    new Thread(localFutureTask).start();
+    return (String)localFutureTask.get();
+  }
+}

@@ -1,0 +1,161 @@
+package com.market.privatespaceactivity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import org.json.JSONObject;
+
+public class ChangeSelfIntroductionActivity extends Activity
+{
+  TextView countText;
+  EditText editText;
+  Button saveBtn;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903080);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.editText = ((EditText)findViewById(2131034304));
+    this.countText = ((TextView)findViewById(2131034305));
+    this.saveBtn = ((Button)findViewById(2131034306));
+    getActionBar().setTitle("修改签名");
+    this.editText.addTextChangedListener(new TextWatcher()
+    {
+      public void afterTextChanged(Editable paramAnonymousEditable)
+      {
+      }
+
+      public void beforeTextChanged(CharSequence paramAnonymousCharSequence, int paramAnonymousInt1, int paramAnonymousInt2, int paramAnonymousInt3)
+      {
+      }
+
+      public void onTextChanged(CharSequence paramAnonymousCharSequence, int paramAnonymousInt1, int paramAnonymousInt2, int paramAnonymousInt3)
+      {
+        int i = 50 - ChangeSelfIntroductionActivity.this.editText.getText().length();
+        ChangeSelfIntroductionActivity.this.countText.setText(i);
+      }
+    });
+    this.saveBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if (ChangeSelfIntroductionActivity.this.editText.getText().toString() == "")
+        {
+          Toast.makeText(ChangeSelfIntroductionActivity.this, "不能为空", 0).show();
+          return;
+        }
+        new ChangeSelfIntroductionActivity.UpdateTask(ChangeSelfIntroductionActivity.this, null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/UpdateUserServlet" });
+      }
+    });
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class UpdateTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private UpdateTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      String str = null;
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL(paramArrayOfString[0] + "?key=selfIntroduction&value=0&userId=" + String.valueOf(ChangeSelfIntroductionActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0)) + "&value=asd").openConnection();
+        localHttpURLConnection.setRequestMethod("POST");
+        localHttpURLConnection.setDoInput(true);
+        localHttpURLConnection.setDoOutput(true);
+        localHttpURLConnection.setUseCaches(false);
+        localHttpURLConnection.setRequestProperty("Charset", "UTF-8");
+        localHttpURLConnection.setRequestProperty("Content-Type", "text/html");
+        OutputStream localOutputStream = localHttpURLConnection.getOutputStream();
+        localOutputStream.write(ChangeSelfIntroductionActivity.this.editText.getText().toString().getBytes("UTF-8"));
+        localOutputStream.flush();
+        localOutputStream.close();
+        BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(localHttpURLConnection.getInputStream()));
+        str = localBufferedReader.readLine();
+        localBufferedReader.close();
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return str;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          String str = new JSONObject(paramString).getString("info");
+          if (str.equals("success"))
+          {
+            this.progressDialog.dismiss();
+            Toast.makeText(ChangeSelfIntroductionActivity.this, "更新成功", 0).show();
+            Intent localIntent = ChangeSelfIntroductionActivity.this.getIntent();
+            localIntent.putExtra("selfIntroduction", ChangeSelfIntroductionActivity.this.editText.getText().toString());
+            ChangeSelfIntroductionActivity.this.setResult(-1, localIntent);
+            ChangeSelfIntroductionActivity.this.finish();
+            return;
+          }
+          if (!str.equals("fail"))
+            return;
+          this.progressDialog.dismiss();
+          Toast.makeText(ChangeSelfIntroductionActivity.this, "更新失败", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      else
+        this.progressDialog.dismiss();
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(ChangeSelfIntroductionActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("更新中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+}

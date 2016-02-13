@@ -1,0 +1,114 @@
+package com.market.service;
+
+import android.app.Service;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.os.IBinder;
+import android.util.Log;
+import android.widget.Toast;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class DownloadService extends Service
+{
+  private final int DOWNLOAD_NOTIFY = 5;
+  int progress = 0;
+  int totalBytes;
+
+  public IBinder onBind(Intent paramIntent)
+  {
+    return null;
+  }
+
+  public void onCreate()
+  {
+    Log.v("download service", "create");
+    new DownloadTask(null).execute(new Void[0]);
+  }
+
+  private class DownloadTask extends AsyncTask<Void, Integer, Void>
+  {
+    File file;
+    long time = 0L;
+    int totalBytes;
+
+    private DownloadTask()
+    {
+    }
+
+    public Void doInBackground(Void[] paramArrayOfVoid)
+    {
+      String str = "http://10.96.73.76:8080/SecondHandMarket/" + DownloadService.this.getSharedPreferences("version", 0).getString("apkPath", "");
+      try
+      {
+        URL localURL = new URL(str);
+        Log.v("url", localURL.toString());
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)localURL.openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        this.totalBytes = localHttpURLConnection.getContentLength();
+        int i = 0;
+        byte[] arrayOfByte = new byte[1024];
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/download");
+        localFile.mkdirs();
+        this.file = new File(localFile.getCanonicalPath() + "/" + DownloadService.this.getSharedPreferences("version", 0).getString("newVersion", "") + ".apk");
+        this.file.createNewFile();
+        FileOutputStream localFileOutputStream = new FileOutputStream(this.file);
+        while (true)
+        {
+          int j = localInputStream.read(arrayOfByte);
+          if (j == -1)
+          {
+            localFileOutputStream.flush();
+            localFileOutputStream.close();
+            localInputStream.close();
+            break;
+          }
+          localFileOutputStream.write(arrayOfByte, 0, j);
+          i += j;
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(Void paramVoid)
+    {
+      if ((this.file != null) && (this.file.exists()))
+      {
+        Toast.makeText(DownloadService.this, "下载完成", 0).show();
+        Intent localIntent = new Intent();
+        localIntent.setAction("android.intent.action.VIEW");
+        localIntent.setDataAndType(Uri.fromFile(this.file), "application/vnd.android.package-archive");
+        localIntent.addFlags(268435456);
+        DownloadService.this.startActivity(localIntent);
+        DownloadService.this.getSharedPreferences("version", 0).edit().putString("version", DownloadService.this.getSharedPreferences("version", 0).getString("newVersion", "")).commit();
+      }
+    }
+
+    public void onPreExecute()
+    {
+      Toast.makeText(DownloadService.this, "新版本已在后台开始下载...", 0).show();
+    }
+
+    public void onProgressUpdate(Integer[] paramArrayOfInteger)
+    {
+      if (System.currentTimeMillis() - this.time >= 100L)
+      {
+        Log.v("update view", "updateview");
+        Log.v("progress", paramArrayOfInteger[0]);
+        this.time = System.currentTimeMillis();
+      }
+    }
+  }
+}

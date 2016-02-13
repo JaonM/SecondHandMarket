@@ -1,0 +1,53 @@
+package com.market.model;
+
+import java.io.Serializable;
+
+public class Message
+  implements Serializable
+{
+  private static final long serialVersionUID = 8553857085945933757L;
+  private int itemId;
+  String message;
+  String nickName;
+  private int userId;
+
+  public int getItemId()
+  {
+    return this.itemId;
+  }
+
+  public String getMessage()
+  {
+    return this.message;
+  }
+
+  public String getNickName()
+  {
+    return this.nickName;
+  }
+
+  public int getUserId()
+  {
+    return this.userId;
+  }
+
+  public void setItemId(int paramInt)
+  {
+    this.itemId = paramInt;
+  }
+
+  public void setMessage(String paramString)
+  {
+    this.message = paramString;
+  }
+
+  public void setNickName(String paramString)
+  {
+    this.nickName = paramString;
+  }
+
+  public void setUserId(int paramInt)
+  {
+    this.userId = paramInt;
+  }
+}

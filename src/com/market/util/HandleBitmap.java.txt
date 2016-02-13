@@ -1,0 +1,76 @@
+package com.market.util;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.util.Log;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+public class HandleBitmap
+{
+  public static Bitmap convertBitmap(File paramFile, int paramInt)
+    throws IOException
+  {
+    BitmapFactory.Options localOptions1 = new BitmapFactory.Options();
+    localOptions1.inJustDecodeBounds = true;
+    FileInputStream localFileInputStream1 = new FileInputStream(paramFile.getAbsolutePath());
+    BitmapFactory.decodeStream(localFileInputStream1, null, localOptions1);
+    localFileInputStream1.close();
+    int i = localOptions1.outWidth;
+    int j = localOptions1.outHeight;
+    Log.v("bitmap width & height", localOptions1.outWidth + " " + localOptions1.outHeight);
+    int k = 1;
+    while (true)
+    {
+      if ((i / 2 < paramInt) || (j / 2 < paramInt))
+      {
+        BitmapFactory.Options localOptions2 = new BitmapFactory.Options();
+        localOptions2.inSampleSize = k;
+        FileInputStream localFileInputStream2 = new FileInputStream(paramFile.getAbsolutePath());
+        Bitmap localBitmap = BitmapFactory.decodeStream(localFileInputStream2, null, localOptions2);
+        localFileInputStream2.close();
+        return localBitmap;
+      }
+      i /= 2;
+      j /= 2;
+      k *= 2;
+    }
+  }
+
+  public static int readPictureDegree(String paramString)
+  {
+    try
+    {
+      int i = new ExifInterface(paramString).getAttributeInt("Orientation", 1);
+      switch (i)
+      {
+      case 4:
+      case 5:
+      case 7:
+      default:
+        return 0;
+      case 6:
+        return 90;
+      case 3:
+      case 8:
+      }
+      return 270;
+    }
+    catch (IOException localIOException)
+    {
+      localIOException.printStackTrace();
+    }
+    return 0;
+  }
+
+  public static Bitmap rotateBitmap(int paramInt, Bitmap paramBitmap)
+  {
+    Matrix localMatrix = new Matrix();
+    localMatrix.postRotate(paramInt);
+    return Bitmap.createBitmap(paramBitmap, 0, 0, paramBitmap.getWidth(), paramBitmap.getHeight(), localMatrix, true);
+  }
+}

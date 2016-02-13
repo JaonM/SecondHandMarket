@@ -1,0 +1,130 @@
+package com.market.model;
+
+import java.io.Serializable;
+
+public class User
+  implements Serializable
+{
+  private static final long serialVersionUID = -4380637442801014307L;
+  int attentionCount;
+  int beAttentionedCount;
+  int id;
+  String name;
+  String nickName;
+  String phone;
+  String photoPathOnServer;
+  int publishCount;
+  String sNo;
+  String selfIntroduction;
+  byte sex;
+
+  public int getAttentionCount()
+  {
+    return this.attentionCount;
+  }
+
+  public int getBeAttentionedCount()
+  {
+    return this.beAttentionedCount;
+  }
+
+  public int getId()
+  {
+    return this.id;
+  }
+
+  public String getName()
+  {
+    return this.name;
+  }
+
+  public String getNickName()
+  {
+    return this.nickName;
+  }
+
+  public String getPhone()
+  {
+    return this.phone;
+  }
+
+  public String getPhotoPathOnServer()
+  {
+    return this.photoPathOnServer;
+  }
+
+  public int getPublishCount()
+  {
+    return this.publishCount;
+  }
+
+  public String getSNo()
+  {
+    return this.sNo;
+  }
+
+  public String getSelfIntroduction()
+  {
+    return this.selfIntroduction;
+  }
+
+  public byte getSex()
+  {
+    return this.sex;
+  }
+
+  public void setAttentionCount(int paramInt)
+  {
+    this.attentionCount = paramInt;
+  }
+
+  public void setBeAttentionedCount(int paramInt)
+  {
+    this.beAttentionedCount = paramInt;
+  }
+
+  public void setId(int paramInt)
+  {
+    this.id = paramInt;
+  }
+
+  public void setName(String paramString)
+  {
+    this.name = paramString;
+  }
+
+  public void setNickName(String paramString)
+  {
+    this.nickName = paramString;
+  }
+
+  public void setPhone(String paramString)
+  {
+    this.phone = paramString;
+  }
+
+  public void setPhotoPathOnServer(String paramString)
+  {
+    this.photoPathOnServer = paramString;
+  }
+
+  public void setPublishCount(int paramInt)
+  {
+    this.publishCount = paramInt;
+  }
+
+  public void setSNo(String paramString)
+  {
+    this.sNo = paramString;
+  }
+
+  public void setSelfIntroduction(String paramString)
+  {
+    this.selfIntroduction = paramString;
+  }
+
+  public void setSex(byte paramByte)
+  {
+    this.sex = paramByte;
+  }
+}

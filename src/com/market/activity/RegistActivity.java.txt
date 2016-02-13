@@ -1,0 +1,379 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore.Images.Media;
+import android.text.Editable;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
+import android.widget.Toast;
+import com.market.model.User;
+import com.market.util.CompressBitmap;
+import com.market.util.HandleBitmap;
+import com.market.util.MD5;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+
+public class RegistActivity extends Activity
+{
+  ImageButton camerBtn;
+  int heightPixel;
+  EditText nameEdit;
+  EditText nickNameEdit;
+  EditText passwordEdit;
+  EditText phoneEdit;
+  ProgressDialog progressDialog;
+  Button registBtn;
+  byte sex = 1;
+  RadioGroup sexGroup;
+  EditText snoEdit;
+  User user;
+  ImageView userImage;
+  EditText userNameEdit;
+  int widthPixel;
+
+  private void addImageByCamera()
+  {
+    if (!Environment.getExternalStorageState().equals("mounted"))
+    {
+      Log.v("sdcard", "无法读写SDcard");
+      return;
+    }
+    File localFile1 = new File(Environment.getExternalStorageDirectory().getPath() + "/SecondHandMarket");
+    if (!localFile1.exists())
+      localFile1.mkdirs();
+    File localFile2 = new File(localFile1.getPath() + "/" + "temp.jpg");
+    Intent localIntent = new Intent("android.media.action.IMAGE_CAPTURE");
+    localIntent.putExtra("android.intent.extra.videoQuality", 1);
+    localIntent.putExtra("output", Uri.fromFile(localFile2));
+    startActivityForResult(localIntent, 1);
+  }
+
+  private void addImageByGallery()
+  {
+    startActivityForResult(new Intent("android.intent.action.PICK", MediaStore.Images.Media.EXTERNAL_CONTENT_URI), 2);
+  }
+
+  public void onActivityResult(int paramInt1, int paramInt2, Intent paramIntent)
+  {
+    super.onActivityResult(paramInt1, paramInt2, paramIntent);
+    switch (paramInt1)
+    {
+    default:
+    case 1:
+    case 2:
+    }
+    do
+    {
+      do
+        return;
+      while (paramInt2 != -1);
+      try
+      {
+        String str2 = Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/temp.jpg";
+        Bitmap localBitmap3 = HandleBitmap.convertBitmap(new File(str2), 300);
+        Bitmap localBitmap4 = HandleBitmap.rotateBitmap(HandleBitmap.readPictureDegree(str2), localBitmap3);
+        this.userImage.setImageBitmap(localBitmap4);
+        return;
+      }
+      catch (FileNotFoundException localFileNotFoundException)
+      {
+        localFileNotFoundException.printStackTrace();
+        return;
+      }
+      catch (IOException localIOException2)
+      {
+        localIOException2.printStackTrace();
+        return;
+      }
+    }
+    while ((paramInt2 != -1) || (paramIntent == null));
+    Uri localUri = paramIntent.getData();
+    String[] arrayOfString = { "_data" };
+    Cursor localCursor = getContentResolver().query(localUri, arrayOfString, null, null, null);
+    localCursor.moveToFirst();
+    String str1 = localCursor.getString(localCursor.getColumnIndex(arrayOfString[0]));
+    localCursor.close();
+    try
+    {
+      Bitmap localBitmap1 = HandleBitmap.convertBitmap(new File(str1), 300);
+      Bitmap localBitmap2 = HandleBitmap.rotateBitmap(HandleBitmap.readPictureDegree(str1), localBitmap1);
+      this.userImage.setImageBitmap(localBitmap2);
+      File localFile1 = new File(Environment.getExternalStorageDirectory().getPath() + "/SecondHandMarket");
+      if (!localFile1.exists())
+        localFile1.mkdirs();
+      File localFile2 = new File(localFile1.getPath() + "/" + "temp.jpg");
+      if (!localFile2.exists())
+        localFile2.createNewFile();
+      FileOutputStream localFileOutputStream = new FileOutputStream(localFile2);
+      ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+      localBitmap2.compress(Bitmap.CompressFormat.JPEG, 100, localByteArrayOutputStream);
+      localByteArrayOutputStream.flush();
+      localFileOutputStream.write(localByteArrayOutputStream.toByteArray());
+      localFileOutputStream.flush();
+      localFileOutputStream.close();
+      localByteArrayOutputStream.close();
+      return;
+    }
+    catch (IOException localIOException1)
+    {
+      localIOException1.printStackTrace();
+    }
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903099);
+    WindowManager localWindowManager = getWindowManager();
+    DisplayMetrics localDisplayMetrics = new DisplayMetrics();
+    localWindowManager.getDefaultDisplay().getMetrics(localDisplayMetrics);
+    this.widthPixel = localDisplayMetrics.widthPixels;
+    this.heightPixel = localDisplayMetrics.heightPixels;
+    this.userNameEdit = ((EditText)findViewById(2131034366));
+    this.passwordEdit = ((EditText)findViewById(2131034367));
+    this.nickNameEdit = ((EditText)findViewById(2131034368));
+    this.phoneEdit = ((EditText)findViewById(2131034372));
+    this.sexGroup = ((RadioGroup)findViewById(2131034369));
+    this.nameEdit = ((EditText)findViewById(2131034373));
+    this.snoEdit = ((EditText)findViewById(2131034374));
+    this.registBtn = ((Button)findViewById(2131034375));
+    this.userImage = ((ImageView)findViewById(2131034364));
+    this.camerBtn = ((ImageButton)findViewById(2131034365));
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.registBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if (RegistActivity.this.userNameEdit.getText().toString().equals(""))
+        {
+          Toast.makeText(RegistActivity.this, "用户名不能为空...", 0).show();
+          return;
+        }
+        if (RegistActivity.this.passwordEdit.getText().toString().equals(""))
+        {
+          Toast.makeText(RegistActivity.this, "密码不能为空...", 0).show();
+          return;
+        }
+        if (RegistActivity.this.nickNameEdit.getText().toString().equals(""))
+        {
+          Toast.makeText(RegistActivity.this, "昵称不能为空...", 0).show();
+          return;
+        }
+        if (RegistActivity.this.phoneEdit.getText().toString().equals(""))
+        {
+          Toast.makeText(RegistActivity.this, "手机号码不能为空...", 0).show();
+          return;
+        }
+        if (RegistActivity.this.phoneEdit.getText().toString().length() != 11)
+        {
+          Toast.makeText(RegistActivity.this, "手机号码格式不正确,请重新输入", 0).show();
+          return;
+        }
+        new RegistActivity.RegistTask(RegistActivity.this, null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/RegistServlet" });
+      }
+    });
+    this.camerBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        new AlertDialog.Builder(RegistActivity.this).setTitle("选择图片获取方式").setItems(new String[] { "拍照", "相册" }, new DialogInterface.OnClickListener()
+        {
+          public void onClick(DialogInterface paramAnonymous2DialogInterface, int paramAnonymous2Int)
+          {
+            switch (paramAnonymous2Int)
+            {
+            default:
+              return;
+            case 0:
+              RegistActivity.this.addImageByCamera();
+              return;
+            case 1:
+            }
+            RegistActivity.this.addImageByGallery();
+          }
+        }).create().show();
+      }
+    });
+    this.sexGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+    {
+      public void onCheckedChanged(RadioGroup paramAnonymousRadioGroup, int paramAnonymousInt)
+      {
+        String str = ((RadioButton)RegistActivity.this.findViewById(paramAnonymousRadioGroup.getCheckedRadioButtonId())).getText().toString();
+        if (str.equals("男"))
+          RegistActivity.this.sex = 1;
+        while (!str.equals("女"))
+          return;
+        RegistActivity.this.sex = 0;
+      }
+    });
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    try
+    {
+      File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/temp.jpg");
+      if (localFile.exists())
+        localFile.delete();
+      return;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class RegistTask extends AsyncTask<String, Void, String>
+  {
+    private RegistTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      while (true)
+      {
+        ByteArrayOutputStream localByteArrayOutputStream;
+        Bitmap localBitmap1;
+        try
+        {
+          DefaultHttpClient localDefaultHttpClient = new DefaultHttpClient();
+          HttpPost localHttpPost = new HttpPost(paramArrayOfString[0]);
+          String str1 = RegistActivity.this.userNameEdit.getText().toString();
+          String str2 = RegistActivity.this.passwordEdit.getText().toString();
+          String str3 = RegistActivity.this.phoneEdit.getText().toString();
+          String str4 = RegistActivity.this.nameEdit.getText().toString();
+          String str5 = RegistActivity.this.snoEdit.getText().toString();
+          String str6 = RegistActivity.this.nickNameEdit.getText().toString();
+          MultipartEntity localMultipartEntity = new MultipartEntity();
+          StringBody localStringBody1 = new StringBody(str1, Charset.forName("UTF-8"));
+          localMultipartEntity.addPart("userName", localStringBody1);
+          localMultipartEntity.addPart("password", new StringBody(MD5.GetMD5Code(str2), Charset.forName("UTF-8")));
+          StringBody localStringBody2 = new StringBody(str3, Charset.forName("UTF-8"));
+          localMultipartEntity.addPart("phone", localStringBody2);
+          StringBody localStringBody3 = new StringBody(str4, Charset.forName("UTF-8"));
+          localMultipartEntity.addPart("name", localStringBody3);
+          StringBody localStringBody4 = new StringBody(str5, Charset.forName("UTF-8"));
+          localMultipartEntity.addPart("sno", localStringBody4);
+          StringBody localStringBody5 = new StringBody(str6, Charset.forName("UTF-8"));
+          localMultipartEntity.addPart("nickName", localStringBody5);
+          localMultipartEntity.addPart("sex", new StringBody(String.valueOf(RegistActivity.this.sex), Charset.forName("UTF-8")));
+          localByteArrayOutputStream = new ByteArrayOutputStream();
+          localBitmap1 = ((BitmapDrawable)RegistActivity.this.userImage.getDrawable()).getBitmap();
+          if (localBitmap1.getByteCount() / 1024 > 100)
+          {
+            Bitmap localBitmap2 = CompressBitmap.getSmallBitmap(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket" + "/temp.jpg", RegistActivity.this.widthPixel, RegistActivity.this.heightPixel);
+            if (localBitmap2 != null)
+            {
+              localBitmap2.compress(Bitmap.CompressFormat.JPEG, 60, localByteArrayOutputStream);
+              FileOutputStream localFileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/" + "temp.jpg");
+              localFileOutputStream.write(localByteArrayOutputStream.toByteArray());
+              localFileOutputStream.flush();
+              localFileOutputStream.close();
+              File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/" + "temp.jpg");
+              FileBody localFileBody = new FileBody(localFile);
+              localMultipartEntity.addPart("photo", localFileBody);
+              localHttpPost.setEntity(localMultipartEntity);
+              HttpResponse localHttpResponse = localDefaultHttpClient.execute(localHttpPost);
+              if (localHttpResponse.getStatusLine().getStatusCode() != 200)
+                break;
+              return EntityUtils.toString(localHttpResponse.getEntity());
+            }
+            localBitmap1.compress(Bitmap.CompressFormat.JPEG, 60, localByteArrayOutputStream);
+            continue;
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return null;
+        }
+        localBitmap1.compress(Bitmap.CompressFormat.JPEG, 60, localByteArrayOutputStream);
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+      {
+        Log.v("regist result", paramString);
+        if (!paramString.equals("1"))
+          break label54;
+        RegistActivity.this.progressDialog.dismiss();
+        Toast.makeText(RegistActivity.this, "注册成功", 0).show();
+        RegistActivity.this.finish();
+      }
+      label54: 
+      while (!paramString.equals("-1"))
+        return;
+      RegistActivity.this.progressDialog.dismiss();
+      Toast.makeText(RegistActivity.this, "注册失败,可能用户已经存在  ", 0).show();
+    }
+
+    protected void onPreExecute()
+    {
+      RegistActivity.this.progressDialog = new ProgressDialog(RegistActivity.this);
+      RegistActivity.this.progressDialog.setProgressStyle(0);
+      RegistActivity.this.progressDialog.setMessage("注册中,请稍后...");
+      RegistActivity.this.progressDialog.setCancelable(false);
+      RegistActivity.this.progressDialog.show();
+    }
+  }
+}

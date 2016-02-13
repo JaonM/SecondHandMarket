@@ -1,0 +1,49 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
+import java.util.ArrayList;
+
+public class HavedPublishLatelyNewsListViewAdapter extends BaseAdapter
+{
+  Context mContext;
+  public ArrayListString newsList = new ArrayList();
+
+  public HavedPublishLatelyNewsListViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    this.newsList.add(您的XXX有新动态);
+  }
+
+  public void clear()
+  {
+    this.newsList.clear();
+    notifyDataSetChanged();
+  }
+
+  public int getCount()
+  {
+    return this.newsList.size();
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return null;
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903064, null);
+    ((TextView)localView.findViewById(2131034251)).setText((CharSequence)this.newsList.get(paramInt));
+    return localView;
+  }
+}

@@ -1,0 +1,156 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.GridView;
+import android.widget.Toast;
+import com.market.adapter2.Classfication2GridViewAdapter;
+import com.market.model.Classfication;
+import com.market.util.Util;
+import java.io.Serializable;
+import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Classfication2Activity extends Activity
+{
+  Classfication2GridViewAdapter adapter;
+  int classfication1Id;
+  GridView gridView;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903045);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    switch (this.classfication1Id)
+    {
+    default:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    }
+    while (true)
+    {
+      this.classfication1Id = getIntent().getIntExtra("classfication1Id", -1);
+      this.adapter = new Classfication2GridViewAdapter(this);
+      this.gridView = ((GridView)findViewById(2131034136));
+      this.gridView.setAdapter(this.adapter);
+      this.gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+      {
+        public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+        {
+          Intent localIntent = new Intent(Classfication2Activity.this, SpecClassficationActivity.class);
+          localIntent.putExtra("classfication", (Serializable)Classfication2Activity.this.adapter.getList().get(paramAnonymousInt));
+          Classfication2Activity.this.startActivity(localIntent);
+        }
+      });
+      new GetClassfication2Task(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/ClassficationServlet" });
+      return;
+      getActionBar().setTitle("学习用品");
+      continue;
+      getActionBar().setTitle("数码电器");
+      continue;
+      getActionBar().setTitle("闲置日用");
+      continue;
+      getActionBar().setTitle("体育用品");
+      continue;
+      getActionBar().setTitle("衣鞋配饰");
+      continue;
+      getActionBar().setTitle("其他");
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class GetClassfication2Task extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private GetClassfication2Task()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        String str = Util.getRequest(Classfication2Activity.this, "http://10.96.73.76:8080/SecondHandMarket/ClassficationServlet?key=classfication&classfication1Id=" + String.valueOf(Classfication2Activity.this.classfication1Id));
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          JSONObject localJSONObject1 = new JSONObject(paramString);
+          String str = localJSONObject1.getString("info");
+          this.progressDialog.dismiss();
+          if (str.equals("success"))
+          {
+            JSONArray localJSONArray = localJSONObject1.getJSONArray("results");
+            for (int i = 0; ; i++)
+            {
+              if (i >= localJSONArray.length())
+              {
+                Classfication2Activity.this.adapter.notifyDataSetChanged();
+                return;
+              }
+              JSONObject localJSONObject2 = localJSONArray.getJSONObject(i);
+              Classfication localClassfication = new Classfication();
+              localClassfication.setClassfication1Id(Integer.valueOf(localJSONObject2.getInt("classfication1Id")).intValue());
+              localClassfication.setClassfication2Name(localJSONObject2.getString("classfication2Name"));
+              Classfication2Activity.this.adapter.getList().add(localClassfication);
+            }
+          }
+          Toast.makeText(Classfication2Activity.this, "不好意思,内容无法显示", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      this.progressDialog.dismiss();
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(Classfication2Activity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("获取中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+}

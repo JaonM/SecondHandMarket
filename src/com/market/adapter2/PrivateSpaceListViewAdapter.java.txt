@@ -1,0 +1,159 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.market.activity.ImageShowActivity;
+import com.market.util.HandleBitmap;
+import com.readystatesoftware.viewbadger.BadgeView;
+import java.io.File;
+import java.io.IOException;
+
+public class PrivateSpaceListViewAdapter extends BaseAdapter
+{
+  ImageView imageView;
+  String[] itemArray = { "个人头像", "昵称", "性别", "个性签名", "联系方式", "真实姓名", "关注的人", "关注我的人", "已发布", "已预订" };
+  Context mContext;
+  private String[] relativeDescription = { "default", "男", "没错,是的,他很懒，啥也没有留下", "未填写", "未填写", "20", "40", "10", "0" };
+  SharedPreferences shared;
+
+  public PrivateSpaceListViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    this.shared = paramContext.getSharedPreferences("islogin", 0);
+    this.relativeDescription[0] = this.shared.getString("userName", "null");
+    Log.v("userName", this.shared.getString("userName", "null"));
+    Log.v("sex", this.shared.getInt("sex", 1));
+    if (this.shared.getInt("sex", 1) == 1)
+      this.relativeDescription[1] = "男";
+    while (true)
+    {
+      this.relativeDescription[2] = this.shared.getString("selfIntroduction", "无");
+      this.relativeDescription[3] = this.shared.getString("phone", "无");
+      this.relativeDescription[4] = this.shared.getString("name", "未填写");
+      this.relativeDescription[5] = this.shared.getString("attentionCount", "0");
+      this.relativeDescription[6] = this.shared.getString("beAttentionedCount", "0");
+      this.relativeDescription[7] = this.shared.getString("publishCount", "0");
+      return;
+      this.relativeDescription[1] = "女";
+    }
+  }
+
+  public String[] getArray()
+  {
+    return this.relativeDescription;
+  }
+
+  public int getCount()
+  {
+    return this.itemArray.length;
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return null;
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    if (paramInt == 0)
+    {
+      View localView2 = LayoutInflater.from(this.mContext).inflate(2130903090, null);
+      ((TextView)localView2.findViewById(2131034342)).setText(this.itemArray[paramInt]);
+      this.imageView = ((ImageView)localView2.findViewById(2131034343));
+      try
+      {
+        Bitmap localBitmap1 = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/user");
+        Bitmap localBitmap2 = HandleBitmap.rotateBitmap(HandleBitmap.readPictureDegree(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/user"), localBitmap1);
+        this.imageView.setImageBitmap(localBitmap2);
+        this.imageView.setOnClickListener(new View.OnClickListener()
+        {
+          public void onClick(View paramAnonymousView)
+          {
+            Intent localIntent = new Intent(PrivateSpaceListViewAdapter.this.mContext, ImageShowActivity.class);
+            try
+            {
+              localIntent.putExtra("path", Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/user");
+              PrivateSpaceListViewAdapter.this.mContext.startActivity(localIntent);
+              return;
+            }
+            catch (IOException localIOException)
+            {
+              while (true)
+                localIOException.printStackTrace();
+            }
+          }
+        });
+        return localView2;
+      }
+      catch (Exception localException)
+      {
+        while (true)
+          localException.printStackTrace();
+      }
+      catch (OutOfMemoryError localOutOfMemoryError)
+      {
+        while (true)
+          localOutOfMemoryError.printStackTrace();
+      }
+    }
+    View localView1 = LayoutInflater.from(this.mContext).inflate(2130903091, null);
+    ((TextView)localView1.findViewById(2131034344)).setText(this.itemArray[paramInt]);
+    TextView localTextView = (TextView)localView1.findViewById(2131034345);
+    int i = paramInt - 1;
+    int j = 0;
+    int k = 0;
+    switch (i)
+    {
+    default:
+    case 5:
+    case 6:
+    case 7:
+    }
+    while (true)
+    {
+      if (j > k)
+      {
+        BadgeView localBadgeView = new BadgeView(this.mContext, localTextView);
+        localBadgeView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
+        localBadgeView.setTextColor(-1);
+        localBadgeView.setPadding(14, 14, 14, 14);
+        localBadgeView.setText("new");
+        localBadgeView.setBackgroundDrawable(this.mContext.getResources().getDrawable(2130837507));
+        localBadgeView.show();
+      }
+      localTextView.setText(this.relativeDescription[(paramInt - 1)]);
+      return localView1;
+      k = Integer.valueOf(this.shared.getString("attentionCount", "")).intValue();
+      j = Integer.valueOf(this.relativeDescription[5]).intValue();
+      this.shared.edit().putString("attentionCount", String.valueOf(j)).commit();
+      continue;
+      k = Integer.valueOf(this.shared.getString("beAttentionedCount", "")).intValue();
+      j = Integer.valueOf(this.relativeDescription[6]).intValue();
+      this.shared.edit().putString("beAttentionedCount", String.valueOf(j)).commit();
+      continue;
+      k = Integer.valueOf(this.shared.getString("publishCount", "")).intValue();
+      j = Integer.valueOf(this.relativeDescription[7]).intValue();
+      this.shared.edit().putString("publishCount", String.valueOf(j)).commit();
+    }
+  }
+}

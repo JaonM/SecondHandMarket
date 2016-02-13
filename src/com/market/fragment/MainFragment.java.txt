@@ -1,0 +1,988 @@
+package com.market.fragment;
+
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.format.DateUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.TranslateAnimation;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.handmark.pulltorefresh.library.ILoadingLayout;
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
+import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
+import com.market.activity.Classfication2Activity;
+import com.market.activity.ItemActivity;
+import com.market.adapter.ClassficationListAdapter;
+import com.market.adapter.NewItemsListAdapter;
+import com.market.adapter.PopItemsListAdapter;
+import com.market.adapter2.NewItemViewPagerAdapter;
+import com.market.model.Advertisement;
+import com.market.model.Item;
+import com.market.util.Util;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class MainFragment extends Fragment
+{
+  static final int UPDATE_CIRCLE_MESSAGE = 273;
+  int bmW;
+  ClassficationListAdapter classficationAdapter;
+  TextView classficationText;
+  RelativeLayout classficationView;
+  int currentIndex = 1;
+  ImageView line;
+  View mainView;
+  NewItemsListAdapter newAdapter;
+  int newEnd = 6;
+  View newFrameLayout;
+  TextView newItemText;
+  LinearLayout newItemView;
+  ListView newItemsList;
+  View newLoadingView;
+  int newStart = 0;
+  int offset;
+  PopItemsListAdapter popAdapter;
+  int popEnd = 6;
+  View popFrameLayout;
+  TextView popItemText;
+  LinearLayout popItemView;
+  ListView popItemsList;
+  View popLoadingView;
+  int popStart = 0;
+  int screenWidth;
+  List<TextView> textList = new ArrayList();
+  String[] titleList = { "分类", "最新动态", "最热单品" };
+  List<View> viewList = new ArrayList();
+  ViewPager viewPager;
+
+  private OutputStream createImageCacheFile(int paramInt)
+  {
+    boolean bool = Environment.getExternalStorageState().equals("mounted");
+    Object localObject = null;
+    if (bool);
+    try
+    {
+      File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache");
+      if (!localFile.exists())
+        localFile.mkdirs();
+      FileOutputStream localFileOutputStream = new FileOutputStream(new File(localFile.getCanonicalPath() + "/" + paramInt));
+      localObject = localFileOutputStream;
+      return localObject;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+    return null;
+  }
+
+  private void handleClassficationPage()
+  {
+    ListView localListView = (ListView)this.classficationView.findViewById(2131034263);
+    this.classficationAdapter = new ClassficationListAdapter(getActivity());
+    localListView.setAdapter(this.classficationAdapter);
+    localListView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        Intent localIntent = new Intent(MainFragment.this.getActivity(), Classfication2Activity.class);
+        localIntent.putExtra("classfication1Id", paramAnonymousInt + 1);
+        MainFragment.this.startActivity(localIntent);
+      }
+    });
+  }
+
+  private void handleNewItemPage()
+  {
+    Log.v("start", this.newStart);
+    Log.v("end", this.newEnd);
+    final PullToRefreshScrollView localPullToRefreshScrollView = (PullToRefreshScrollView)this.newItemView.findViewById(2131034267);
+    final ViewPager localViewPager = (ViewPager)this.newItemView.findViewById(2131034271);
+    final NewItemViewPagerAdapter localNewItemViewPagerAdapter = new NewItemViewPagerAdapter(getActivity());
+    localViewPager.setAdapter(localNewItemViewPagerAdapter);
+    final ArrayList localArrayList = new ArrayList();
+    final LinearLayout localLinearLayout = (LinearLayout)this.newItemView.findViewById(2131034272);
+    localViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener()
+    {
+      public void onPageScrollStateChanged(int paramAnonymousInt)
+      {
+      }
+
+      public void onPageScrolled(int paramAnonymousInt1, float paramAnonymousFloat, int paramAnonymousInt2)
+      {
+      }
+
+      public void onPageSelected(int paramAnonymousInt)
+      {
+        Log.v("page index", paramAnonymousInt);
+        if (localArrayList.size() > 0)
+          ((ImageView)localArrayList.get(paramAnonymousInt)).setImageResource(2130837511);
+        for (int i = 0; ; i++)
+        {
+          if (i >= localArrayList.size())
+            return;
+          if (i != paramAnonymousInt)
+            ((ImageView)localArrayList.get(i)).setImageResource(2130837510);
+        }
+      }
+    });
+    final Handler local4 = new Handler()
+    {
+      public void handleMessage(Message paramAnonymousMessage)
+      {
+        if (paramAnonymousMessage.what == 273)
+        {
+          i = localViewPager.getCurrentItem();
+          Log.v("current page", i);
+          if (localNewItemViewPagerAdapter.getCount() > 0)
+            if (i + 1 < localNewItemViewPagerAdapter.getCount())
+              break label99;
+        }
+        label99: for (int i = 0; ; i = (i + 1) % localNewItemViewPagerAdapter.getCount())
+        {
+          Log.v("page count", localNewItemViewPagerAdapter.getCount());
+          localViewPager.setCurrentItem(i, true);
+          return;
+        }
+      }
+    };
+    new Timer().schedule(new TimerTask()
+    {
+      public void run()
+      {
+        Message localMessage = new Message();
+        localMessage.what = 273;
+        local4.sendMessage(localMessage);
+      }
+    }
+    , 6000L, 6000L);
+    this.newItemsList = ((ListView)this.newItemView.findViewById(2131034273));
+    this.newAdapter = new NewItemsListAdapter(getActivity());
+    this.newItemsList.setAdapter(this.newAdapter);
+    this.newItemsList.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        Intent localIntent = new Intent(MainFragment.this.getActivity(), ItemActivity.class);
+        localIntent.putExtra("item", (Serializable)MainFragment.this.newAdapter.getList().get(paramAnonymousInt));
+        MainFragment.this.startActivity(localIntent);
+      }
+    });
+    AsyncTask local1GetDataTask = new AsyncTask()
+    {
+      boolean isTopRefresh = true;
+
+      public String doInBackground(Boolean[] paramAnonymousArrayOfBoolean)
+      {
+        this.isTopRefresh = paramAnonymousArrayOfBoolean[0].booleanValue();
+        try
+        {
+          HashMap localHashMap = new HashMap();
+          localHashMap.put("key", "newItem");
+          localHashMap.put("start", String.valueOf(MainFragment.this.newStart));
+          localHashMap.put("end", String.valueOf(MainFragment.this.newEnd));
+          String str = Util.postRequest(MainFragment.this.getActivity(), "http://10.96.73.76:8080/SecondHandMarket/ItemServlet", localHashMap);
+          return str;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+        return null;
+      }
+
+      public void onPostExecute(String paramAnonymousString)
+      {
+        if (paramAnonymousString != null)
+          try
+          {
+            JSONObject localJSONObject1 = new JSONObject(paramAnonymousString);
+            String str = localJSONObject1.getString("info");
+            JSONArray localJSONArray;
+            int i;
+            int j;
+            if (str.equals("success"))
+            {
+              localJSONArray = localJSONObject1.getJSONArray("result");
+              i = 0;
+              if (i >= localJSONArray.length())
+              {
+                MainFragment.this.newFrameLayout.setVisibility(0);
+                j = MainFragment.this.newStart;
+                label72: if (j < MainFragment.this.newAdapter.getList().size())
+                  break label348;
+              }
+            }
+            while (true)
+            {
+              MainFragment.this.newAdapter.notifyDataSetChanged();
+              MainFragment.setListViewChildHeight(MainFragment.this.newItemsList);
+              MainFragment.this.newLoadingView.setVisibility(8);
+              localPullToRefreshScrollView.onRefreshComplete();
+              localViewPager.setFocusable(true);
+              localViewPager.setFocusableInTouchMode(true);
+              localViewPager.requestFocus();
+              return;
+              Item localItem = new Item();
+              JSONObject localJSONObject2 = localJSONArray.getJSONObject(i);
+              localItem.setId(localJSONObject2.getInt("id"));
+              localItem.setName(localJSONObject2.getString("name"));
+              localItem.setPrice(localJSONObject2.getDouble("price"));
+              localItem.setDescription(localJSONObject2.getString("description"));
+              localItem.setPhotoCount(localJSONObject2.getInt("photoCount"));
+              localItem.setOwnerId(localJSONObject2.getInt("ownerId"));
+              localItem.setCollectCount(localJSONObject2.getInt("collectCount"));
+              localItem.setClassfication1(localJSONObject2.getString("classfication1"));
+              localItem.setClassfication2(localJSONObject2.getString("classfication2"));
+              localItem.setStatus(localJSONObject2.getInt("status"));
+              localItem.setPhotoPathOnServer(localJSONObject2.getString("photoPath").split(","));
+              localItem.setBuyerId(localJSONObject2.getInt("buyerId"));
+              MainFragment.this.newAdapter.getList().add(localItem);
+              i++;
+              break;
+              label348: MainFragment.1GetImageTask local1GetImageTask = new MainFragment.1GetImageTask(MainFragment.this);
+              Integer[] arrayOfInteger = new Integer[1];
+              arrayOfInteger[0] = Integer.valueOf(j);
+              local1GetImageTask.execute(arrayOfInteger);
+              j++;
+              break label72;
+              if (str.equals("fail"))
+                Toast.makeText(MainFragment.this.getActivity(), "不好意思,服务器出错了", 0).show();
+            }
+          }
+          catch (Exception localException)
+          {
+            localException.printStackTrace();
+            return;
+          }
+        if (MainFragment.this.getActivity() != null)
+          Toast.makeText(MainFragment.this.getActivity(), "不好意思,网络出问题了...内容无法显示", 0).show();
+        MainFragment.this.newLoadingView.setVisibility(8);
+      }
+    };
+    Boolean[] arrayOfBoolean = new Boolean[1];
+    arrayOfBoolean[0] = Boolean.valueOf(true);
+    local1GetDataTask.execute(arrayOfBoolean);
+    localPullToRefreshScrollView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener()
+    {
+      public void onRefresh(PullToRefreshBase<ScrollView> paramAnonymousPullToRefreshBase)
+      {
+        String str = DateUtils.formatDateTime(MainFragment.this.getActivity(), System.currentTimeMillis(), 524305);
+        paramAnonymousPullToRefreshBase.getLoadingLayoutProxy().setLastUpdatedLabel(str);
+        if (localPullToRefreshScrollView.isHeaderShown())
+        {
+          localPullToRefreshScrollView.getLoadingLayoutProxy(true, false).setPullLabel(MainFragment.this.getActivity().getText(2131165247));
+          localPullToRefreshScrollView.getLoadingLayoutProxy(true, false).setReleaseLabel("松开刷新...");
+          localPullToRefreshScrollView.getLoadingLayoutProxy(true, false).setRefreshingLabel("刷新中...");
+          MainFragment.this.newStart = 0;
+          MainFragment.this.newEnd = 6;
+          MainFragment.this.newAdapter.getList().clear();
+          local1GetDataTask2 = new MainFragment.1GetDataTask(MainFragment.this, localPullToRefreshScrollView, localViewPager);
+          arrayOfBoolean2 = new Boolean[1];
+          arrayOfBoolean2[0] = Boolean.valueOf(true);
+          local1GetDataTask2.execute(arrayOfBoolean2);
+          localNewItemViewPagerAdapter.getList().clear();
+          new MainFragment.1GetAdvertisementTask(MainFragment.this, localNewItemViewPagerAdapter, localArrayList, localLinearLayout).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/AdvertisementServlet" });
+        }
+        while (!localPullToRefreshScrollView.isFooterShown())
+        {
+          MainFragment.1GetDataTask local1GetDataTask2;
+          Boolean[] arrayOfBoolean2;
+          return;
+        }
+        localPullToRefreshScrollView.getLoadingLayoutProxy(false, true).setPullLabel(MainFragment.this.getActivity().getText(2131165250));
+        localPullToRefreshScrollView.getLoadingLayoutProxy(false, true).setReleaseLabel("松开加载更多...");
+        localPullToRefreshScrollView.getLoadingLayoutProxy(false, true).setRefreshingLabel("加载中...");
+        MainFragment.this.newStart = MainFragment.this.newEnd;
+        MainFragment localMainFragment = MainFragment.this;
+        localMainFragment.newEnd = (6 + localMainFragment.newEnd);
+        MainFragment.1GetDataTask local1GetDataTask1 = new MainFragment.1GetDataTask(MainFragment.this, localPullToRefreshScrollView, localViewPager);
+        Boolean[] arrayOfBoolean1 = new Boolean[1];
+        arrayOfBoolean1[0] = Boolean.valueOf(false);
+        local1GetDataTask1.execute(arrayOfBoolean1);
+      }
+    });
+    new AsyncTask()
+    {
+      public String doInBackground(String[] paramAnonymousArrayOfString)
+      {
+        try
+        {
+          String str = Util.postRequest(MainFragment.this.getActivity(), paramAnonymousArrayOfString[0], null);
+          return str;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+        return null;
+      }
+
+      public void onPostExecute(String paramAnonymousString)
+      {
+        if (paramAnonymousString != null)
+          try
+          {
+            JSONObject localJSONObject1 = new JSONObject(paramAnonymousString);
+            JSONArray localJSONArray;
+            int i;
+            if (localJSONObject1.getString("info").equals("success"))
+            {
+              localJSONArray = localJSONObject1.getJSONArray("results");
+              i = 0;
+              if (i < localJSONArray.length());
+            }
+            else
+            {
+              localNewItemViewPagerAdapter.notifyDataSetChanged();
+              return;
+            }
+            JSONObject localJSONObject2 = localJSONArray.optJSONObject(i);
+            Advertisement localAdvertisement = new Advertisement();
+            int j = localJSONObject2.getInt("id");
+            String str = localJSONObject2.getString("url");
+            localAdvertisement.setPhotoPath(localJSONObject2.getString("photoPath"));
+            localAdvertisement.setUrl(str);
+            localAdvertisement.setId(j);
+            localNewItemViewPagerAdapter.addAd(localAdvertisement);
+            ImageView localImageView = new ImageView(MainFragment.this.getActivity());
+            localImageView.setLayoutParams(new ViewGroup.LayoutParams(-2, -2));
+            localImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            if (i == 0)
+              localImageView.setImageResource(2130837511);
+            while (true)
+            {
+              localArrayList.add(localImageView);
+              localLinearLayout.addView(localImageView);
+              i++;
+              break;
+              localImageView.setImageResource(2130837510);
+            }
+          }
+          catch (Exception localException)
+          {
+            localException.printStackTrace();
+          }
+      }
+    }
+    .execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/AdvertisementServlet" });
+  }
+
+  private void handlePopItemPage()
+  {
+    final PullToRefreshScrollView localPullToRefreshScrollView = (PullToRefreshScrollView)this.popItemView.findViewById(2131034274);
+    final ViewPager localViewPager = (ViewPager)this.popItemView.findViewById(2131034277);
+    final NewItemViewPagerAdapter localNewItemViewPagerAdapter = new NewItemViewPagerAdapter(getActivity());
+    localViewPager.setAdapter(localNewItemViewPagerAdapter);
+    localViewPager.setCurrentItem(1);
+    Log.v("Pop Item Page", "popItemPage");
+    final ArrayList localArrayList = new ArrayList();
+    final LinearLayout localLinearLayout = (LinearLayout)this.popItemView.findViewById(2131034278);
+    localViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener()
+    {
+      public void onPageScrollStateChanged(int paramAnonymousInt)
+      {
+      }
+
+      public void onPageScrolled(int paramAnonymousInt1, float paramAnonymousFloat, int paramAnonymousInt2)
+      {
+      }
+
+      public void onPageSelected(int paramAnonymousInt)
+      {
+        if (localArrayList.size() > 0)
+          ((ImageView)localArrayList.get(paramAnonymousInt)).setImageResource(2130837511);
+        for (int i = 0; ; i++)
+        {
+          if (i >= localArrayList.size())
+            return;
+          if (i != paramAnonymousInt)
+            ((ImageView)localArrayList.get(i)).setImageResource(2130837510);
+        }
+      }
+    });
+    final Handler local9 = new Handler()
+    {
+      public void handleMessage(Message paramAnonymousMessage)
+      {
+        if (paramAnonymousMessage.what == 273)
+        {
+          i = localViewPager.getCurrentItem();
+          Log.v("current page", i);
+          if (localNewItemViewPagerAdapter.getCount() > 0)
+            if (i + 1 < localNewItemViewPagerAdapter.getCount())
+              break label99;
+        }
+        label99: for (int i = 0; ; i = (i + 1) % localNewItemViewPagerAdapter.getCount())
+        {
+          Log.v("page count", localNewItemViewPagerAdapter.getCount());
+          localViewPager.setCurrentItem(i, true);
+          return;
+        }
+      }
+    };
+    new Timer().schedule(new TimerTask()
+    {
+      public void run()
+      {
+        Message localMessage = new Message();
+        localMessage.what = 273;
+        local9.sendMessage(localMessage);
+      }
+    }
+    , 6000L, 6000L);
+    this.popItemsList = ((ListView)this.popItemView.findViewById(2131034279));
+    this.popAdapter = new PopItemsListAdapter(getActivity());
+    this.popItemsList.setAdapter(this.popAdapter);
+    this.popItemsList.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        Intent localIntent = new Intent(MainFragment.this.getActivity(), ItemActivity.class);
+        localIntent.putExtra("item", (Serializable)MainFragment.this.popAdapter.getList().get(paramAnonymousInt));
+        MainFragment.this.startActivity(localIntent);
+      }
+    });
+    localPullToRefreshScrollView.setOnRefreshListener(new PullToRefreshBase.OnRefreshListener()
+    {
+      public void onRefresh(PullToRefreshBase<ScrollView> paramAnonymousPullToRefreshBase)
+      {
+        String str = DateUtils.formatDateTime(MainFragment.this.getActivity(), System.currentTimeMillis(), 524305);
+        paramAnonymousPullToRefreshBase.getLoadingLayoutProxy().setLastUpdatedLabel(str);
+        if (localPullToRefreshScrollView.isHeaderShown())
+        {
+          localPullToRefreshScrollView.getLoadingLayoutProxy(true, false).setPullLabel("下拉刷新...");
+          localPullToRefreshScrollView.getLoadingLayoutProxy(true, false).setReleaseLabel("松开刷新...");
+          localPullToRefreshScrollView.getLoadingLayoutProxy(true, false).setRefreshingLabel("刷新中...");
+          MainFragment.this.popStart = 0;
+          MainFragment.this.popEnd = 6;
+          MainFragment.this.popAdapter.getList().clear();
+          local2GetDataTask2 = new MainFragment.2GetDataTask(MainFragment.this, localPullToRefreshScrollView, localViewPager);
+          arrayOfBoolean2 = new Boolean[1];
+          arrayOfBoolean2[0] = Boolean.valueOf(true);
+          local2GetDataTask2.execute(arrayOfBoolean2);
+          localNewItemViewPagerAdapter.getList().clear();
+          new MainFragment.2GetAdvertisementTask(MainFragment.this, localNewItemViewPagerAdapter, localArrayList, localLinearLayout, localViewPager).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/AdvertisementServlet" });
+        }
+        while (!localPullToRefreshScrollView.isFooterShown())
+        {
+          MainFragment.2GetDataTask local2GetDataTask2;
+          Boolean[] arrayOfBoolean2;
+          return;
+        }
+        localPullToRefreshScrollView.getLoadingLayoutProxy(false, true).setPullLabel("上拉加载...");
+        localPullToRefreshScrollView.getLoadingLayoutProxy(false, true).setReleaseLabel("松开加载更多...");
+        localPullToRefreshScrollView.getLoadingLayoutProxy(false, true).setRefreshingLabel("加载中...");
+        MainFragment.this.popStart = MainFragment.this.popEnd;
+        MainFragment localMainFragment = MainFragment.this;
+        localMainFragment.popEnd = (6 + localMainFragment.popEnd);
+        MainFragment.2GetDataTask local2GetDataTask1 = new MainFragment.2GetDataTask(MainFragment.this, localPullToRefreshScrollView, localViewPager);
+        Boolean[] arrayOfBoolean1 = new Boolean[1];
+        arrayOfBoolean1[0] = Boolean.valueOf(false);
+        local2GetDataTask1.execute(arrayOfBoolean1);
+      }
+    });
+    AsyncTask local2GetDataTask = new AsyncTask()
+    {
+      boolean isTopRefresh;
+
+      public String doInBackground(Boolean[] paramAnonymousArrayOfBoolean)
+      {
+        this.isTopRefresh = paramAnonymousArrayOfBoolean[0].booleanValue();
+        try
+        {
+          HashMap localHashMap = new HashMap();
+          localHashMap.put("key", "popItem");
+          localHashMap.put("start", String.valueOf(MainFragment.this.popStart));
+          localHashMap.put("end", String.valueOf(MainFragment.this.popEnd));
+          String str = Util.postRequest(MainFragment.this.getActivity(), "http://10.96.73.76:8080/SecondHandMarket/ItemServlet", localHashMap);
+          return str;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+        return null;
+      }
+
+      public void onPostExecute(String paramAnonymousString)
+      {
+        if (paramAnonymousString != null)
+        {
+          try
+          {
+            JSONObject localJSONObject1 = new JSONObject(paramAnonymousString);
+            String str = localJSONObject1.getString("info");
+            JSONArray localJSONArray;
+            int i;
+            int j;
+            if (str.equals("success"))
+            {
+              localJSONArray = localJSONObject1.getJSONArray("result");
+              i = 0;
+              if (i >= localJSONArray.length())
+              {
+                MainFragment.this.popFrameLayout.setVisibility(0);
+                j = MainFragment.this.popStart;
+                label72: if (j < MainFragment.this.popAdapter.getList().size())
+                  break label355;
+              }
+            }
+            while (true)
+            {
+              MainFragment.this.popAdapter.notifyDataSetChanged();
+              MainFragment.setListViewChildHeight(MainFragment.this.popItemsList);
+              MainFragment.this.popLoadingView.setVisibility(8);
+              localPullToRefreshScrollView.onRefreshComplete();
+              if (!this.isTopRefresh)
+                return;
+              localViewPager.setFocusable(true);
+              localViewPager.setFocusableInTouchMode(true);
+              localViewPager.requestFocus();
+              return;
+              Item localItem = new Item();
+              JSONObject localJSONObject2 = localJSONArray.getJSONObject(i);
+              localItem.setId(localJSONObject2.getInt("id"));
+              localItem.setName(localJSONObject2.getString("name"));
+              localItem.setPrice(localJSONObject2.getDouble("price"));
+              localItem.setDescription(localJSONObject2.getString("description"));
+              localItem.setPhotoCount(localJSONObject2.getInt("photoCount"));
+              localItem.setOwnerId(localJSONObject2.getInt("ownerId"));
+              localItem.setCollectCount(localJSONObject2.getInt("collectCount"));
+              localItem.setClassfication1(localJSONObject2.getString("classfication1"));
+              localItem.setClassfication2(localJSONObject2.getString("classfication2"));
+              localItem.setStatus(localJSONObject2.getInt("status"));
+              localItem.setPhotoPathOnServer(localJSONObject2.getString("photoPath").split(","));
+              localItem.setBuyerId(localJSONObject2.getInt("buyerId"));
+              MainFragment.this.popAdapter.getList().add(localItem);
+              i++;
+              break;
+              label355: MainFragment.2GetImageTask local2GetImageTask = new MainFragment.2GetImageTask(MainFragment.this);
+              Integer[] arrayOfInteger = new Integer[1];
+              arrayOfInteger[0] = Integer.valueOf(j);
+              local2GetImageTask.execute(arrayOfInteger);
+              j++;
+              break label72;
+              if (str.equals("fail"))
+                Toast.makeText(MainFragment.this.getActivity(), "不好意思,服务器出错了", 0).show();
+            }
+          }
+          catch (Exception localException)
+          {
+            localException.printStackTrace();
+            return;
+          }
+        }
+        else
+        {
+          if (MainFragment.this.getActivity() != null)
+            Toast.makeText(MainFragment.this.getActivity(), "不好意思,网络出问题了...内容无法显示", 0).show();
+          MainFragment.this.newLoadingView.setVisibility(8);
+        }
+      }
+    };
+    Boolean[] arrayOfBoolean = new Boolean[1];
+    arrayOfBoolean[0] = Boolean.valueOf(true);
+    local2GetDataTask.execute(arrayOfBoolean);
+    new AsyncTask()
+    {
+      public String doInBackground(String[] paramAnonymousArrayOfString)
+      {
+        try
+        {
+          String str = Util.postRequest(MainFragment.this.getActivity(), paramAnonymousArrayOfString[0], null);
+          return str;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+        return null;
+      }
+
+      public void onPostExecute(String paramAnonymousString)
+      {
+        if (paramAnonymousString != null)
+          try
+          {
+            JSONObject localJSONObject1 = new JSONObject(paramAnonymousString);
+            JSONArray localJSONArray;
+            int i;
+            if (localJSONObject1.getString("info").equals("success"))
+            {
+              localJSONArray = localJSONObject1.getJSONArray("results");
+              i = 0;
+              if (i < localJSONArray.length());
+            }
+            else
+            {
+              localNewItemViewPagerAdapter.notifyDataSetChanged();
+              localViewPager.setCurrentItem(1);
+              return;
+            }
+            JSONObject localJSONObject2 = localJSONArray.optJSONObject(i);
+            Advertisement localAdvertisement = new Advertisement();
+            int j = localJSONObject2.getInt("id");
+            String str = localJSONObject2.getString("url");
+            localAdvertisement.setPhotoPath(localJSONObject2.getString("photoPath"));
+            localAdvertisement.setUrl(str);
+            localAdvertisement.setId(j);
+            localNewItemViewPagerAdapter.addAd(localAdvertisement);
+            ImageView localImageView = new ImageView(MainFragment.this.getActivity());
+            localImageView.setLayoutParams(new ViewGroup.LayoutParams(-2, -2));
+            localImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            if (i == 0)
+              localImageView.setImageResource(2130837511);
+            while (true)
+            {
+              localArrayList.add(localImageView);
+              localLinearLayout.addView(localImageView);
+              i++;
+              break;
+              localImageView.setImageResource(2130837510);
+            }
+          }
+          catch (Exception localException)
+          {
+            localException.printStackTrace();
+          }
+      }
+    }
+    .execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/AdvertisementServlet" });
+  }
+
+  private void initLine()
+  {
+    this.line = ((ImageView)this.mainView.findViewById(2131034283));
+    this.bmW = BitmapFactory.decodeResource(getActivity().getResources(), 2130837569).getWidth();
+    DisplayMetrics localDisplayMetrics = new DisplayMetrics();
+    getActivity().getWindowManager().getDefaultDisplay().getMetrics(localDisplayMetrics);
+    this.screenWidth = localDisplayMetrics.widthPixels;
+    this.offset = ((localDisplayMetrics.widthPixels / 3 - this.bmW) / 2);
+    Matrix localMatrix = new Matrix();
+    localMatrix.postTranslate(2 * this.offset + this.bmW, 0.0F);
+    this.line.setImageMatrix(localMatrix);
+    Log.v("initPosition", this.line.getX());
+  }
+
+  private void initTextView()
+  {
+    this.classficationText = ((TextView)this.mainView.findViewById(2131034280));
+    this.newItemText = ((TextView)this.mainView.findViewById(2131034281));
+    this.popItemText = ((TextView)this.mainView.findViewById(2131034282));
+    this.textList.add(this.classficationText);
+    this.textList.add(this.newItemText);
+    this.textList.add(this.popItemText);
+    this.classficationText.setOnClickListener(new TextViewOnClickListener(0));
+    this.newItemText.setOnClickListener(new TextViewOnClickListener(1));
+    this.popItemText.setOnClickListener(new TextViewOnClickListener(2));
+    ((TextView)this.textList.get(this.currentIndex)).setTextColor(getActivity().getResources().getColor(2131230722));
+  }
+
+  private void initViewPager()
+  {
+    this.viewPager = ((ViewPager)this.mainView.findViewById(2131034284));
+    LayoutInflater localLayoutInflater = LayoutInflater.from(getActivity());
+    this.popItemView = ((LinearLayout)localLayoutInflater.inflate(2130903071, null));
+    this.newItemView = ((LinearLayout)localLayoutInflater.inflate(2130903070, null));
+    this.newLoadingView = this.newItemView.findViewById(2131034268);
+    this.popLoadingView = this.popItemView.findViewById(2131034275);
+    this.newFrameLayout = this.newItemView.findViewById(2131034270);
+    this.popFrameLayout = this.popItemView.findViewById(2131034276);
+    this.classficationView = ((RelativeLayout)localLayoutInflater.inflate(2130903068, null));
+    this.viewList.add(this.classficationView);
+    this.viewList.add(this.newItemView);
+    this.viewList.add(this.popItemView);
+    this.viewPager.setAdapter(new PagerAdapter()
+    {
+      public void destroyItem(ViewGroup paramAnonymousViewGroup, int paramAnonymousInt, Object paramAnonymousObject)
+      {
+        paramAnonymousViewGroup.removeView((View)MainFragment.this.viewList.get(paramAnonymousInt));
+      }
+
+      public int getCount()
+      {
+        return MainFragment.this.viewList.size();
+      }
+
+      public int getItemPosition(Object paramAnonymousObject)
+      {
+        return super.getItemPosition(paramAnonymousObject);
+      }
+
+      public Object instantiateItem(ViewGroup paramAnonymousViewGroup, int paramAnonymousInt)
+      {
+        paramAnonymousViewGroup.addView((View)MainFragment.this.viewList.get(paramAnonymousInt), 0);
+        switch (paramAnonymousInt)
+        {
+        default:
+        case 0:
+        case 1:
+        case 2:
+        }
+        while (true)
+        {
+          Log.v("view", ((View)MainFragment.this.viewList.get(paramAnonymousInt)).toString());
+          return MainFragment.this.viewList.get(paramAnonymousInt);
+          Log.v("here", "xixi");
+          continue;
+          Log.v("here", "haha");
+          continue;
+          Log.v("here", "hehe");
+        }
+      }
+
+      public boolean isViewFromObject(View paramAnonymousView, Object paramAnonymousObject)
+      {
+        return paramAnonymousView == paramAnonymousObject;
+      }
+    });
+    this.viewPager.setOnPageChangeListener(new MyOnPageChangeListener());
+    Log.v("setCurrentItem", this.currentIndex);
+    this.viewPager.setCurrentItem(this.currentIndex);
+  }
+
+  public static void setListViewChildHeight(ListView paramListView)
+  {
+    ListAdapter localListAdapter = paramListView.getAdapter();
+    if (localListAdapter == null)
+      return;
+    int i = 0;
+    for (int j = 0; ; j++)
+    {
+      if (j >= localListAdapter.getCount())
+      {
+        ViewGroup.LayoutParams localLayoutParams = paramListView.getLayoutParams();
+        localLayoutParams.height = (i + paramListView.getDividerHeight() * (-1 + localListAdapter.getCount()));
+        paramListView.setLayoutParams(localLayoutParams);
+        return;
+      }
+      View localView = localListAdapter.getView(j, null, paramListView);
+      localView.measure(0, 0);
+      i += localView.getMeasuredHeight();
+    }
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+  }
+
+  public View onCreateView(LayoutInflater paramLayoutInflater, ViewGroup paramViewGroup, Bundle paramBundle)
+  {
+    Log.v("createView", "createView");
+    this.mainView = paramLayoutInflater.inflate(2130903072, null);
+    initLine();
+    initTextView();
+    initViewPager();
+    this.newStart = 0;
+    this.newEnd = 6;
+    this.popStart = 0;
+    this.popEnd = 6;
+    handleClassficationPage();
+    handleNewItemPage();
+    handlePopItemPage();
+    return this.mainView;
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    this.currentIndex = 1;
+    this.viewPager = null;
+    this.viewList.clear();
+    this.textList.clear();
+    int i = 0;
+    while (true)
+      try
+      {
+        int j;
+        if (i >= this.newAdapter.getList().size())
+        {
+          j = 0;
+          int k = this.popAdapter.getList().size();
+          if (j >= k)
+            Log.v("destroy", "destroy");
+        }
+        else
+        {
+          File localFile2 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache" + "/" + ((Item)this.newAdapter.getList().get(i)).getId());
+          if (!localFile2.exists())
+            continue;
+          localFile2.delete();
+          continue;
+        }
+        File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache" + "/" + ((Item)this.popAdapter.getList().get(j)).getId());
+        if (localFile1.exists())
+          localFile1.delete();
+        j++;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+        continue;
+        i++;
+      }
+  }
+
+  public void onResume()
+  {
+    super.onResume();
+    this.newStart = 0;
+    this.newEnd = 6;
+    this.popStart = 0;
+    this.popEnd = 6;
+    Log.v("on resume", "on resume");
+  }
+
+  public class MyOnPageChangeListener
+    implements ViewPager.OnPageChangeListener
+  {
+    int one = 2 * MainFragment.this.offset + MainFragment.this.bmW;
+    int two = 2 * this.one;
+
+    public MyOnPageChangeListener()
+    {
+    }
+
+    public void onPageScrollStateChanged(int paramInt)
+    {
+    }
+
+    public void onPageScrolled(int paramInt1, float paramFloat, int paramInt2)
+    {
+    }
+
+    public void onPageSelected(int paramInt)
+    {
+      ((TextView)MainFragment.this.textList.get(paramInt)).setTextColor(MainFragment.this.getActivity().getResources().getColor(2131230722));
+      Log.v("LastIndex", MainFragment.this.currentIndex);
+      Log.v("currentIndex", paramInt);
+      Object localObject = null;
+      switch (paramInt)
+      {
+      default:
+        if (MainFragment.this.currentIndex != paramInt)
+        {
+          ((TextView)MainFragment.this.textList.get(MainFragment.this.currentIndex)).setTextColor(-16777216);
+          MainFragment.this.currentIndex = paramInt;
+          ((Animation)localObject).setFillAfter(true);
+          ((Animation)localObject).setDuration(300L);
+          MainFragment.this.line.startAnimation((Animation)localObject);
+        }
+        return;
+      case 0:
+        MainFragment.this.line.setImageResource(2130837570);
+        Bitmap localBitmap3 = BitmapFactory.decodeResource(MainFragment.this.getActivity().getResources(), 2130837570);
+        MainFragment.this.offset = ((MainFragment.this.screenWidth / 3 - localBitmap3.getWidth()) / 2);
+        MainFragment.this.bmW = localBitmap3.getWidth();
+        if (MainFragment.this.currentIndex == 1)
+          localObject = new TranslateAnimation(0.0F, -MainFragment.this.offset - MainFragment.this.bmW, 0.0F, 0.0F);
+        while (true)
+        {
+          localBitmap3.recycle();
+          break;
+          int k = MainFragment.this.currentIndex;
+          localObject = null;
+          if (k == 2)
+            localObject = new TranslateAnimation(this.one, -MainFragment.this.offset - MainFragment.this.bmW, 0.0F, 0.0F);
+        }
+      case 1:
+        MainFragment.this.line.setImageResource(2130837569);
+        Bitmap localBitmap2 = BitmapFactory.decodeResource(MainFragment.this.getActivity().getResources(), 2130837569);
+        MainFragment.this.offset = ((MainFragment.this.screenWidth / 3 - localBitmap2.getWidth()) / 2);
+        MainFragment.this.bmW = localBitmap2.getWidth();
+        if (MainFragment.this.currentIndex == 0)
+          localObject = new TranslateAnimation(-MainFragment.this.offset - MainFragment.this.bmW, 0.0F, 0.0F, 0.0F);
+        while (true)
+        {
+          localBitmap2.recycle();
+          break;
+          int j = MainFragment.this.currentIndex;
+          localObject = null;
+          if (j == 2)
+            localObject = new TranslateAnimation(this.one, 0.0F, 0.0F, 0.0F);
+        }
+      case 2:
+      }
+      MainFragment.this.line.setImageResource(2130837569);
+      Bitmap localBitmap1 = BitmapFactory.decodeResource(MainFragment.this.getActivity().getResources(), 2130837569);
+      MainFragment.this.offset = ((MainFragment.this.screenWidth / 3 - localBitmap1.getWidth()) / 2);
+      MainFragment.this.bmW = localBitmap1.getWidth();
+      if (MainFragment.this.currentIndex == 0)
+        localObject = new TranslateAnimation(-MainFragment.this.offset - MainFragment.this.bmW, this.one, 0.0F, 0.0F);
+      while (true)
+      {
+        localBitmap1.recycle();
+        break;
+        int i = MainFragment.this.currentIndex;
+        localObject = null;
+        if (i == 1)
+          localObject = new TranslateAnimation(0.0F, this.one, 0.0F, 0.0F);
+      }
+    }
+  }
+
+  private class TextViewOnClickListener
+    implements View.OnClickListener
+  {
+    int index;
+
+    public TextViewOnClickListener(int arg2)
+    {
+      int i;
+      this.index = i;
+    }
+
+    public void onClick(View paramView)
+    {
+      MainFragment.this.viewPager.setCurrentItem(this.index);
+    }
+  }
+}

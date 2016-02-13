@@ -1,0 +1,61 @@
+package com.market.model;
+
+public class Version
+{
+  private String apkPath;
+  private String description;
+  private int id;
+  private String version;
+
+  public Version()
+  {
+  }
+
+  public Version(int paramInt, String paramString1, String paramString2, String paramString3)
+  {
+    this.id = paramInt;
+    this.version = paramString1;
+    this.apkPath = paramString2;
+    this.description = paramString3;
+  }
+
+  public String getApkPath()
+  {
+    return this.apkPath;
+  }
+
+  public String getDescription()
+  {
+    return this.description;
+  }
+
+  public int getId()
+  {
+    return this.id;
+  }
+
+  public String getVersion()
+  {
+    return this.version;
+  }
+
+  public void setApkPath(String paramString)
+  {
+    this.apkPath = paramString;
+  }
+
+  public void setDescription(String paramString)
+  {
+    this.description = paramString;
+  }
+
+  public void setId(int paramInt)
+  {
+    this.id = paramInt;
+  }
+
+  public void setVersion(String paramString)
+  {
+    this.version = paramString;
+  }
+}

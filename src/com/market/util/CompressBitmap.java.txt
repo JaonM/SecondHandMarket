@@ -1,0 +1,61 @@
+package com.market.util;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapFactory.Options;
+import android.util.Log;
+
+public class CompressBitmap
+{
+  public static int calculateInSampleSize(BitmapFactory.Options paramOptions, int paramInt1, int paramInt2)
+  {
+    int i = paramOptions.outHeight;
+    int j = paramOptions.outWidth;
+    int k = 1;
+    int n;
+    if ((i > paramInt2) || (j > paramInt1))
+    {
+      int m = Math.round(i / paramInt2);
+      n = Math.round(j / paramInt1);
+      if (m < n)
+        k = m;
+    }
+    else
+    {
+      return k;
+    }
+    return n;
+  }
+
+  public static Bitmap compressBitmpBySize(String paramString)
+  {
+    BitmapFactory.Options localOptions = new BitmapFactory.Options();
+    localOptions.inJustDecodeBounds = true;
+    BitmapFactory.decodeFile(paramString, localOptions);
+    int i = localOptions.outWidth;
+    int j = localOptions.outHeight;
+    Log.v("width and height", i + " " + j);
+    localOptions.inJustDecodeBounds = false;
+    int k = 1;
+    if ((i > j) && (i > 120.0F));
+    for (k = (int)(i / 120.0F); ; k = (int)(j / 200.0F))
+      do
+      {
+        if (k < 0)
+          k = 1;
+        localOptions.inSampleSize = k;
+        return BitmapFactory.decodeFile(paramString, localOptions);
+      }
+      while ((i >= j) || (j <= 200.0F));
+  }
+
+  public static Bitmap getSmallBitmap(String paramString, int paramInt1, int paramInt2)
+  {
+    BitmapFactory.Options localOptions = new BitmapFactory.Options();
+    localOptions.inJustDecodeBounds = true;
+    BitmapFactory.decodeFile(paramString, localOptions);
+    localOptions.inSampleSize = calculateInSampleSize(localOptions, paramInt1, paramInt1);
+    localOptions.inJustDecodeBounds = false;
+    return BitmapFactory.decodeFile(paramString, localOptions);
+  }
+}

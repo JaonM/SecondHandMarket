@@ -1,0 +1,133 @@
+package com.market.adapter;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.AsyncTask;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.market.activity.MainActivity;
+import com.market.util.Util;
+import com.readystatesoftware.viewbadger.BadgeView;
+import java.util.HashMap;
+import java.util.Map;
+import org.json.JSONObject;
+
+public class DrawerListAdapter extends BaseAdapter
+{
+  int[] images = { 2130837549, 2130837558, 2130837514, 2130837561 };
+  Context mContext;
+
+  public DrawerListAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    new GetVersionTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/VersionServlet" });
+  }
+
+  public int getCount()
+  {
+    return MainActivity.functions.length;
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return MainActivity.functions[paramInt];
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903054, null);
+    SharedPreferences localSharedPreferences = this.mContext.getSharedPreferences("version", 0);
+    ((TextView)localView.findViewById(2131034220)).setText(MainActivity.functions[paramInt]);
+    ((ImageView)localView.findViewById(2131034219)).setImageResource(this.images[paramInt]);
+    TextView localTextView = (TextView)localView.findViewById(2131034221);
+    if (((paramInt == 3) && (this.mContext.getSharedPreferences("isFirst", 0).getBoolean("slidingIsFirst", true))) || ((paramInt == 3) && (localSharedPreferences.getBoolean("hasNew", false)) && (!localSharedPreferences.getBoolean("hasRead", false))))
+    {
+      localTextView.setVisibility(0);
+      BadgeView localBadgeView = new BadgeView(this.mContext, localTextView);
+      localBadgeView.setBackgroundResource(2130837507);
+      localBadgeView.setLayoutParams(new ViewGroup.LayoutParams(-2, -2));
+      localBadgeView.setTextColor(-1);
+      localBadgeView.setPadding(14, 14, 14, 14);
+      Log.v("bage", "here");
+      localBadgeView.setText("New");
+      localBadgeView.setTextSize(14.0F);
+      localBadgeView.show();
+    }
+    return localView;
+  }
+
+  private class GetVersionTask extends AsyncTask<String, Void, String>
+  {
+    private GetVersionTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "newVersion");
+        String str = Util.postRequest(DrawerListAdapter.this.mContext, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          JSONObject localJSONObject = new JSONObject(paramString);
+          if (localJSONObject.getString("info").equals("success"))
+          {
+            String str1 = localJSONObject.getString("version");
+            String str2 = localJSONObject.getString("apkPath");
+            String str3 = localJSONObject.getString("description");
+            SharedPreferences localSharedPreferences = DrawerListAdapter.this.mContext.getSharedPreferences("version", 0);
+            String str4 = localSharedPreferences.getString("version", "0.9.3");
+            if (str1.compareTo(str4) > 0)
+            {
+              localSharedPreferences.edit().putBoolean("hasNew", true).commit();
+              localSharedPreferences.edit().putString("newVersion", str1).commit();
+              localSharedPreferences.edit().putString("apkPath", str2).commit();
+              localSharedPreferences.edit().putString("description", str3).commit();
+              localSharedPreferences.edit().putBoolean("hasRead", false).commit();
+              DrawerListAdapter.this.notifyDataSetChanged();
+            }
+            while (true)
+            {
+              Log.v("is new", str1.compareTo(str4));
+              Log.v("new version", str1);
+              Log.v("old version", str4);
+              Log.v("hasNew", localSharedPreferences.getBoolean("hasNew", false));
+              Log.v("hasRead", localSharedPreferences.getBoolean("hasRead", false));
+              return;
+              localSharedPreferences.edit().putBoolean("hasNew", false).commit();
+            }
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+  }
+}

@@ -1,0 +1,269 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.text.Editable;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.market.model.User;
+import com.market.util.MD5;
+import com.market.util.Util;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class LoginActivity extends Activity
+{
+  SharedPreferences.Editor editor;
+  Button loginBtn;
+  String password;
+  EditText passwordEdit;
+  ProgressDialog progressDialog;
+  TextView registerText;
+  SharedPreferences sharedPreferences;
+  User user = new User();
+  String userName;
+  EditText userNameEdit;
+  String userStatus = "defaultStatus";
+
+  private void login(String paramString)
+  {
+    new LoginTask(null).execute(new String[] { paramString });
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903065);
+    this.registerText = ((TextView)findViewById(2131034255));
+    this.loginBtn = ((Button)findViewById(2131034254));
+    this.userNameEdit = ((EditText)findViewById(2131034252));
+    this.passwordEdit = ((EditText)findViewById(2131034253));
+    this.loginBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if ((LoginActivity.this.userNameEdit.getText().toString().equals("")) || (LoginActivity.this.passwordEdit.getText().toString().equals("")))
+        {
+          Toast.makeText(LoginActivity.this, "用户名或密码不能为空", 0).show();
+          return;
+        }
+        LoginActivity.this.userName = LoginActivity.this.userNameEdit.getText().toString();
+        LoginActivity.this.password = LoginActivity.this.passwordEdit.getText().toString();
+        LoginActivity.this.login("http://10.96.73.76:8080/SecondHandMarket/LoginServlet");
+      }
+    });
+    this.sharedPreferences = getSharedPreferences("islogin", 0);
+    this.editor = this.sharedPreferences.edit();
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.registerText.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        Intent localIntent = new Intent(LoginActivity.this, RegistActivity.class);
+        LoginActivity.this.startActivity(localIntent);
+      }
+    });
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    Log.v("login destroy", "login destroy");
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class GetPhotoTask extends AsyncTask<String, Void, Bitmap>
+  {
+    private GetPhotoTask()
+    {
+    }
+
+    public Bitmap doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL(paramArrayOfString[0]).openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        localHttpURLConnection.setConnectTimeout(10000);
+        localHttpURLConnection.setRequestProperty("Charset", "UTF-8");
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        byte[] arrayOfByte = new byte[1024];
+        ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+        while (true)
+        {
+          int i = localInputStream.read(arrayOfByte);
+          if (i == -1)
+            return BitmapFactory.decodeByteArray(localByteArrayOutputStream.toByteArray(), 0, localByteArrayOutputStream.toByteArray().length);
+          localByteArrayOutputStream.write(arrayOfByte, 0, i);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(Bitmap paramBitmap)
+    {
+      if (paramBitmap != null);
+      try
+      {
+        File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache");
+        localFile1.mkdirs();
+        File localFile2 = new File(localFile1.getCanonicalPath() + "/user");
+        localFile2.createNewFile();
+        FileOutputStream localFileOutputStream = new FileOutputStream(localFile2);
+        ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+        paramBitmap.compress(Bitmap.CompressFormat.JPEG, 100, localByteArrayOutputStream);
+        localFileOutputStream.write(localByteArrayOutputStream.toByteArray());
+        localFileOutputStream.flush();
+        localFileOutputStream.close();
+        localByteArrayOutputStream.close();
+        paramBitmap.recycle();
+        LoginActivity.this.progressDialog.dismiss();
+        LoginActivity.this.finish();
+        return;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+    }
+  }
+
+  private class LoginTask extends AsyncTask<String, Void, String>
+  {
+    private LoginTask()
+    {
+    }
+
+    protected String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("account", LoginActivity.this.userName);
+        localHashMap.put("password", MD5.GetMD5Code(LoginActivity.this.password));
+        String str = Util.postRequest(LoginActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    protected void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+      {
+        try
+        {
+          JSONObject localJSONObject = new JSONObject(paramString);
+          String str1 = localJSONObject.getString("info");
+          if (str1.equals("success"))
+          {
+            int i = localJSONObject.getInt("userid");
+            String str2 = localJSONObject.getString("nickName");
+            String str3 = localJSONObject.getString("name");
+            String str4 = localJSONObject.getString("phone");
+            int j = localJSONObject.getInt("sex");
+            String str5 = localJSONObject.getString("selfIntroduction");
+            String str6 = localJSONObject.getString("photopath");
+            String str7 = localJSONObject.getString("attentionCount");
+            String str8 = localJSONObject.getString("beAttentionedCount");
+            String str9 = localJSONObject.getString("publishCount");
+            String str10 = localJSONObject.getString("sno");
+            LoginActivity.this.user.setPhotoPathOnServer(str6);
+            LoginActivity.this.editor.putInt("userId", i);
+            LoginActivity.this.editor.putBoolean("isLogin", true);
+            LoginActivity.this.editor.putString("userName", str2);
+            LoginActivity.this.editor.putString("userStatus", LoginActivity.this.userStatus);
+            LoginActivity.this.editor.putString("name", str3);
+            LoginActivity.this.editor.putString("phone", str4);
+            LoginActivity.this.editor.putInt("sex", j);
+            LoginActivity.this.editor.putString("selfIntroduction", str5);
+            LoginActivity.this.editor.putString("photoPath", str6);
+            LoginActivity.this.editor.putString("attentionCount", str7);
+            LoginActivity.this.editor.putString("beAttentionedCount", str8);
+            LoginActivity.this.editor.putString("publishCount", str9);
+            LoginActivity.this.editor.putString("sno", str10);
+            LoginActivity.this.editor.commit();
+            LoginActivity.GetPhotoTask localGetPhotoTask = new LoginActivity.GetPhotoTask(LoginActivity.this, null);
+            String[] arrayOfString = new String[1];
+            arrayOfString[0] = ("http://10.96.73.76:8080/SecondHandMarket/" + str6);
+            localGetPhotoTask.execute(arrayOfString);
+            return;
+          }
+          if (!str1.equals("fail"))
+            return;
+          LoginActivity.this.progressDialog.dismiss();
+          LoginActivity.this.editor.putBoolean("isLogin", false);
+          LoginActivity.this.editor.commit();
+          Toast.makeText(LoginActivity.this, "用户名或密码错误..", 0).show();
+          return;
+        }
+        catch (JSONException localJSONException)
+        {
+          localJSONException.printStackTrace();
+          return;
+        }
+      }
+      else
+      {
+        LoginActivity.this.progressDialog.dismiss();
+        Toast.makeText(LoginActivity.this, "服务器开了小差,登陆失败", 0).show();
+      }
+    }
+
+    protected void onPreExecute()
+    {
+      LoginActivity.this.progressDialog = new ProgressDialog(LoginActivity.this);
+      LoginActivity.this.progressDialog.setIndeterminate(false);
+      LoginActivity.this.progressDialog.setProgressStyle(0);
+      LoginActivity.this.progressDialog.setMessage("登录中,请稍后...");
+      LoginActivity.this.progressDialog.setCancelable(false);
+      LoginActivity.this.progressDialog.show();
+    }
+  }
+}

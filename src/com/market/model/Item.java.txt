@@ -1,0 +1,146 @@
+package com.market.model;
+
+import java.io.Serializable;
+
+public class Item
+  implements Serializable
+{
+  private static final long serialVersionUID = -2189444407167448811L;
+  private int buyerId;
+  private String classfication1;
+  private String classfication2;
+  private int collectCount;
+  private String description;
+  private int id;
+  private String name;
+  private int ownerId;
+  private int photoCount;
+  private String[] photoPathOnServer;
+  private double price;
+  private int status;
+
+  public int getBuyerId()
+  {
+    return this.buyerId;
+  }
+
+  public String getClassfication1()
+  {
+    return this.classfication1;
+  }
+
+  public String getClassfication2()
+  {
+    return this.classfication2;
+  }
+
+  public int getCollectCount()
+  {
+    return this.collectCount;
+  }
+
+  public String getDescription()
+  {
+    return this.description;
+  }
+
+  public int getId()
+  {
+    return this.id;
+  }
+
+  public String getName()
+  {
+    return this.name;
+  }
+
+  public int getOwnerId()
+  {
+    return this.ownerId;
+  }
+
+  public int getPhotoCount()
+  {
+    return this.photoCount;
+  }
+
+  public String[] getPhotoPathOnServer()
+  {
+    return this.photoPathOnServer;
+  }
+
+  public double getPrice()
+  {
+    return this.price;
+  }
+
+  public int getStatus()
+  {
+    return this.status;
+  }
+
+  public void setBuyerId(int paramInt)
+  {
+    this.buyerId = paramInt;
+  }
+
+  public void setClassfication1(String paramString)
+  {
+    this.classfication1 = paramString;
+  }
+
+  public void setClassfication2(String paramString)
+  {
+    this.classfication2 = paramString;
+  }
+
+  public void setCollectCount(int paramInt)
+  {
+    this.collectCount = paramInt;
+  }
+
+  public void setDescription(String paramString)
+  {
+    this.description = paramString;
+  }
+
+  public void setId(int paramInt)
+  {
+    this.id = paramInt;
+  }
+
+  public void setName(String paramString)
+  {
+    this.name = paramString;
+  }
+
+  public void setOwnerId(int paramInt)
+  {
+    this.ownerId = paramInt;
+  }
+
+  public void setPhotoCount(int paramInt)
+  {
+    this.photoCount = paramInt;
+  }
+
+  public void setPhotoPathOnServer(String[] paramArrayOfString)
+  {
+    this.photoPathOnServer = paramArrayOfString;
+  }
+
+  public void setPrice(double paramDouble)
+  {
+    this.price = paramDouble;
+  }
+
+  public void setStatus(int paramInt)
+  {
+    this.status = paramInt;
+  }
+
+  public String toString()
+  {
+    return this.id + " " + this.name;
+  }
+}

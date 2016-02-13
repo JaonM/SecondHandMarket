@@ -1,0 +1,54 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Editable;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+public class SearchActivity extends Activity
+{
+  Button button;
+  EditText editText;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903100);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    getActionBar().setTitle("搜索");
+    this.editText = ((EditText)findViewById(2131034376));
+    this.button = ((Button)findViewById(2131034377));
+    this.button.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if (SearchActivity.this.editText.getText().equals(""))
+          Toast.makeText(SearchActivity.this, "搜索内容不能为空", 0).show();
+        Intent localIntent = new Intent(SearchActivity.this, SearchResultActivity.class);
+        localIntent.putExtra("key", SearchActivity.this.editText.getText().toString());
+        SearchActivity.this.startActivity(localIntent);
+      }
+    });
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+}

@@ -1,0 +1,349 @@
+package com.market.fragment;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Fragment;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore.Images.Media;
+import android.text.Editable;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.market.activity.MainActivity;
+import com.market.activity.PublishFragmentClassficationActivity;
+import com.market.activity.PublishGridViewImageShowActivity;
+import com.market.adapter2.PublishGridViewAdapter;
+import com.market.customlayout.MyGridView;
+import com.market.util.CompressBitmap;
+import com.market.util.HandleBitmap;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+
+public class PublishFragment extends Fragment
+{
+  public static final int CAMERA = 1;
+  public static final int CLASSFICATION = 3;
+  public static final int GALLERY = 2;
+  public static PublishGridViewAdapter adapter;
+  public static String[] classficationString;
+  public static List<String> fileList;
+  public static String fileName;
+  Button classfication;
+  MyGridView gridView;
+  int heightPixel;
+  private EditText itemContent;
+  private EditText itemName;
+  private EditText itemPrice;
+  Button publishBtn;
+  private TextView txt1;
+  private TextView txt2;
+  int widthPixel;
+
+  private void addImageByCamera()
+  {
+    if (!Environment.getExternalStorageState().equals("mounted"))
+    {
+      Log.v("sdcard", "无法读写SDcard");
+      return;
+    }
+    File localFile1 = new File(Environment.getExternalStorageDirectory().getPath() + "/SecondHandMarket");
+    if (!localFile1.exists())
+      localFile1.mkdirs();
+    fileName = localFile1.getPath() + "/" + UUID.randomUUID().toString() + ".jpg";
+    fileList.add(fileName);
+    File localFile2 = new File(fileName);
+    Intent localIntent = new Intent("android.media.action.IMAGE_CAPTURE");
+    localIntent.putExtra("android.intent.extra.videoQuality", 1);
+    localIntent.putExtra("output", Uri.fromFile(localFile2));
+    getActivity().startActivityForResult(localIntent, 1);
+  }
+
+  private void addImageByGallery()
+  {
+    Intent localIntent = new Intent("android.intent.action.PICK", MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+    getActivity().startActivityForResult(localIntent, 2);
+  }
+
+  public View onCreateView(LayoutInflater paramLayoutInflater, ViewGroup paramViewGroup, Bundle paramBundle)
+  {
+    View localView = paramLayoutInflater.inflate(2130903092, null);
+    this.gridView = ((MyGridView)localView.findViewById(2131034347));
+    adapter = new PublishGridViewAdapter(getActivity());
+    this.txt1 = ((TextView)localView.findViewById(2131034349));
+    this.txt2 = ((TextView)localView.findViewById(2131034350));
+    this.itemName = ((EditText)localView.findViewById(2131034346));
+    this.itemPrice = ((EditText)localView.findViewById(2131034351));
+    this.itemContent = ((EditText)localView.findViewById(2131034352));
+    this.publishBtn = ((Button)localView.findViewById(2131034353));
+    classficationString = new String[] { "", "" };
+    fileList = new ArrayList();
+    DisplayMetrics localDisplayMetrics = new DisplayMetrics();
+    getActivity().getWindowManager().getDefaultDisplay().getMetrics(localDisplayMetrics);
+    this.widthPixel = localDisplayMetrics.widthPixels;
+    this.heightPixel = localDisplayMetrics.heightPixels;
+    this.gridView.setAdapter(adapter);
+    this.gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        Log.v("position", paramAnonymousInt);
+        if (paramAnonymousInt == -1 + PublishGridViewAdapter.images.size())
+        {
+          new AlertDialog.Builder(PublishFragment.this.getActivity()).setTitle("选择图片获取方式").setItems(new String[] { "拍照", "相册" }, new DialogInterface.OnClickListener()
+          {
+            public void onClick(DialogInterface paramAnonymous2DialogInterface, int paramAnonymous2Int)
+            {
+              switch (paramAnonymous2Int)
+              {
+              default:
+                return;
+              case 0:
+                PublishFragment.this.addImageByCamera();
+                return;
+              case 1:
+              }
+              PublishFragment.this.addImageByGallery();
+            }
+          }).create().show();
+          return;
+        }
+        Intent localIntent = new Intent(PublishFragment.this.getActivity(), PublishGridViewImageShowActivity.class);
+        localIntent.putExtra("currentIndex", paramAnonymousInt);
+        PublishFragment.this.getActivity().startActivity(localIntent);
+      }
+    });
+    this.classfication = ((Button)localView.findViewById(2131034348));
+    this.classfication.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        Intent localIntent = new Intent(PublishFragment.this.getActivity(), PublishFragmentClassficationActivity.class);
+        PublishFragment.this.getActivity().startActivityForResult(localIntent, 3);
+      }
+    });
+    this.publishBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if (!MainActivity.isLogin)
+        {
+          Toast.makeText(PublishFragment.this.getActivity(), "还未登陆,需要先登录才能发布信息", 0).show();
+          return;
+        }
+        if (PublishFragment.this.itemName.getText().toString().equals(""))
+        {
+          Toast.makeText(PublishFragment.this.getActivity(), "物品名不能为空", 0).show();
+          return;
+        }
+        if (PublishFragment.this.txt2.getText().equals(""))
+        {
+          Toast.makeText(PublishFragment.this.getActivity(), "物品分类不能为空", 0).show();
+          return;
+        }
+        if (PublishFragment.this.itemPrice.getText().toString().equals(""))
+        {
+          Toast.makeText(PublishFragment.this.getActivity(), "物品价格不能为空", 0).show();
+          return;
+        }
+        if (PublishFragment.fileList.size() == 0)
+        {
+          Toast.makeText(PublishFragment.this.getActivity(), "至少有一张图片", 0).show();
+          return;
+        }
+        new PublishFragment.PublishTask(PublishFragment.this, null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/PublishServlet" });
+      }
+    });
+    return localView;
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    Log.v("destroy", "destroy");
+    PublishGridViewAdapter.images.clear();
+    PublishGridViewAdapter.notCompressBitmaps.clear();
+    try
+    {
+      File[] arrayOfFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket").listFiles();
+      int i = arrayOfFile.length;
+      for (int j = 0; ; j++)
+      {
+        if (j >= i)
+        {
+          classficationString = null;
+          fileList.clear();
+          fileList = null;
+          fileName = null;
+          return;
+        }
+        File localFile = arrayOfFile[j];
+        if ((!localFile.isDirectory()) && (localFile.exists()))
+          localFile.delete();
+      }
+    }
+    catch (Exception localException)
+    {
+      while (true)
+        localException.printStackTrace();
+    }
+  }
+
+  public void onResume()
+  {
+    super.onResume();
+    Log.v("resume", "resume");
+    this.txt1.setText(classficationString[0]);
+    this.txt2.setText(classficationString[1]);
+    if (!classficationString[0].equals(""))
+    {
+      this.txt1.setVisibility(0);
+      this.txt2.setVisibility(0);
+    }
+  }
+
+  private class PublishTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private PublishTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        DefaultHttpClient localDefaultHttpClient = new DefaultHttpClient();
+        HttpPost localHttpPost = new HttpPost(paramArrayOfString[0]);
+        MultipartEntity localMultipartEntity = new MultipartEntity();
+        StringBody localStringBody1 = new StringBody(PublishFragment.this.itemName.getText().toString(), Charset.forName("UTF-8"));
+        StringBody localStringBody2 = new StringBody(PublishFragment.this.txt1.getText().toString(), Charset.forName("UTF-8"));
+        StringBody localStringBody3 = new StringBody(PublishFragment.this.txt2.getText().toString(), Charset.forName("UTF-8"));
+        StringBody localStringBody4 = new StringBody(PublishFragment.this.itemPrice.getText().toString(), Charset.forName("UTF-8"));
+        StringBody localStringBody5 = new StringBody(PublishFragment.this.itemContent.getText().toString(), Charset.forName("UTF-8"));
+        StringBody localStringBody6 = new StringBody(String.valueOf(PublishFragment.this.getActivity().getSharedPreferences("islogin", 0).getInt("userId", 0)), Charset.forName("UTF-8"));
+        StringBody localStringBody7 = new StringBody(String.valueOf(PublishFragment.fileList.size()));
+        localMultipartEntity.addPart("name", localStringBody1);
+        localMultipartEntity.addPart("classfication1", localStringBody2);
+        localMultipartEntity.addPart("classfication2", localStringBody3);
+        localMultipartEntity.addPart("price", localStringBody4);
+        localMultipartEntity.addPart("description", localStringBody5);
+        localMultipartEntity.addPart("ownerId", localStringBody6);
+        localMultipartEntity.addPart("photoCount", localStringBody7);
+        Iterator localIterator = PublishFragment.fileList.iterator();
+        while (true)
+        {
+          if (!localIterator.hasNext())
+          {
+            localHttpPost.setEntity(localMultipartEntity);
+            HttpResponse localHttpResponse = localDefaultHttpClient.execute(localHttpPost);
+            if (localHttpResponse.getStatusLine().getStatusCode() != 200)
+              break;
+            return EntityUtils.toString(localHttpResponse.getEntity());
+          }
+          String str = (String)localIterator.next();
+          Bitmap localBitmap1 = CompressBitmap.getSmallBitmap(str, PublishFragment.this.widthPixel, PublishFragment.this.heightPixel);
+          int i = HandleBitmap.readPictureDegree(str);
+          Log.v("filePath", str);
+          Bitmap localBitmap2 = HandleBitmap.rotateBitmap(i, localBitmap1);
+          ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+          localBitmap2.compress(Bitmap.CompressFormat.JPEG, 60, localByteArrayOutputStream);
+          FileOutputStream localFileOutputStream = new FileOutputStream(str);
+          localFileOutputStream.write(localByteArrayOutputStream.toByteArray());
+          localFileOutputStream.flush();
+          localFileOutputStream.close();
+          localByteArrayOutputStream.close();
+          localBitmap1.recycle();
+          File localFile = new File(str);
+          FileBody localFileBody = new FileBody(localFile);
+          localMultipartEntity.addPart(String.valueOf(PublishFragment.fileList.indexOf(str)), localFileBody);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+      {
+        try
+        {
+          String str = new JSONObject(paramString).getString("info");
+          if (str.equals("success"))
+          {
+            this.progressDialog.dismiss();
+            Toast.makeText(PublishFragment.this.getActivity(), "发布成功...可以前往个人主页查看发布的物品信息", 0).show();
+            return;
+          }
+          if (!str.equals("fail"))
+            return;
+          this.progressDialog.dismiss();
+          Toast.makeText(PublishFragment.this.getActivity(), "发布失败", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          this.progressDialog.dismiss();
+          return;
+        }
+      }
+      else
+      {
+        this.progressDialog.dismiss();
+        Toast.makeText(PublishFragment.this.getActivity(), "不好意思,服务器开了小差...", 0).show();
+      }
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(PublishFragment.this.getActivity());
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("发布中...请稍后");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+}

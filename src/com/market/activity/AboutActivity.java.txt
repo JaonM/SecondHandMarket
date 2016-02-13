@@ -1,0 +1,30 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.MenuItem;
+
+public class AboutMarketActivity extends Activity
+{
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903040);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+}

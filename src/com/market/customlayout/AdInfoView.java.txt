@@ -1,0 +1,272 @@
+package com.market.customlayout;
+
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+import android.widget.ViewFlipper;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+public class AdInfoView extends FrameLayout
+  implements View.OnTouchListener
+{
+  public static final String URL = "";
+  public ArrayList<ImageView> circlesList = new ArrayList();
+  int distance = 50;
+  int imageCount = 5;
+  ArrayList<String> imageURL = null;
+  ArrayList<ImageView> imagesList = new ArrayList();
+  LinearLayout linearLayout;
+  Context mContext;
+  float startX;
+  public ViewFlipper viewFlipper;
+  View.OnClickListener viewFlipperOnClickListener = new View.OnClickListener()
+  {
+    public void onClick(View paramAnonymousView)
+    {
+    }
+  };
+  ViewGroup viewGroup;
+
+  public AdInfoView(Context paramContext)
+  {
+    super(paramContext);
+    this.mContext = paramContext;
+    init();
+  }
+
+  public AdInfoView(Context paramContext, AttributeSet paramAttributeSet)
+  {
+    super(paramContext, paramAttributeSet);
+    this.mContext = paramContext;
+    init();
+  }
+
+  private void addCirclesToList()
+  {
+    for (int i = 0; ; i++)
+    {
+      if (i >= this.imagesList.size())
+        return;
+      ImageView localImageView = new ImageView(this.mContext);
+      localImageView.setLayoutParams(new FrameLayout.LayoutParams(-2, -2));
+      localImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+      localImageView.setImageResource(2130837510);
+      localImageView.setPadding(4, 0, 0, 2);
+      this.circlesList.add(localImageView);
+    }
+  }
+
+  private void addImagesToList()
+  {
+    int i = 0;
+    if (i >= this.imageCount)
+      return;
+    ImageView localImageView = new ImageView(this.mContext);
+    localImageView.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+    switch (i)
+    {
+    default:
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    }
+    while (true)
+    {
+      this.imagesList.add(localImageView);
+      i++;
+      break;
+      localImageView.setBackgroundColor(-16777216);
+      continue;
+      localImageView.setBackgroundColor(-7829368);
+      continue;
+      localImageView.setBackgroundColor(-16776961);
+      continue;
+      localImageView.setBackgroundColor(-16711936);
+      continue;
+      localImageView.setBackgroundColor(-65281);
+    }
+  }
+
+  public static boolean addImagesToListFromURL(String paramString)
+  {
+    return false;
+  }
+
+  private void init()
+  {
+    this.viewFlipper = new ViewFlipper(this.mContext);
+    this.viewFlipper.setLayoutParams(new FrameLayout.LayoutParams(-1, -1));
+    this.viewFlipper.setOnClickListener(this.viewFlipperOnClickListener);
+    this.viewFlipper.setOnTouchListener(this);
+    this.linearLayout = ((LinearLayout)LayoutInflater.from(this.mContext).inflate(2130903044, null));
+    new LoadImageTask(null).execute(new String[] { "" });
+  }
+
+  public int getCurrentViewIndex()
+  {
+    return this.imagesList.indexOf(this.viewFlipper.getCurrentView());
+  }
+
+  protected void onLayout(boolean paramBoolean, int paramInt1, int paramInt2, int paramInt3, int paramInt4)
+  {
+    super.onLayout(paramBoolean, paramInt1, paramInt2, paramInt3, paramInt4);
+  }
+
+  public boolean onTouch(View paramView, MotionEvent paramMotionEvent)
+  {
+    switch (paramMotionEvent.getAction())
+    {
+    default:
+      return true;
+    case 0:
+      this.startX = paramMotionEvent.getRawX();
+      Log.v("startX", this.startX);
+      this.viewGroup.requestDisallowInterceptTouchEvent(true);
+      return true;
+    case 1:
+    }
+    Log.v("ev.getRawX()", paramMotionEvent.getRawX());
+    Log.v("ev.getX()-startX", paramMotionEvent.getX() - this.startX);
+    int k;
+    int m;
+    if (paramMotionEvent.getRawX() > this.startX)
+    {
+      this.viewFlipper.setInAnimation(this.mContext, 2130968578);
+      this.viewFlipper.setOutAnimation(this.mContext, 2130968581);
+      this.viewFlipper.showPrevious();
+      k = getCurrentViewIndex();
+      if (k != -1)
+      {
+        m = 0;
+        if (m < this.circlesList.size())
+          break label204;
+      }
+    }
+    while (true)
+    {
+      this.viewGroup.requestDisallowInterceptTouchEvent(false);
+      return true;
+      label204: if (m == k)
+        ((ImageView)this.circlesList.get(m)).setImageResource(2130837511);
+      ((ImageView)this.circlesList.get(m)).setImageResource(2130837510);
+      m++;
+      break;
+      if (paramMotionEvent.getRawX() < this.startX)
+      {
+        this.viewFlipper.setInAnimation(this.mContext, 2130968579);
+        this.viewFlipper.setOutAnimation(this.mContext, 2130968580);
+        this.viewFlipper.showNext();
+        int i = getCurrentViewIndex();
+        if (i != -1)
+          for (int j = 0; j < this.circlesList.size(); j++)
+          {
+            if (j == i)
+              ((ImageView)this.circlesList.get(j)).setImageResource(2130837511);
+            ((ImageView)this.circlesList.get(j)).setImageResource(2130837510);
+          }
+      }
+      else
+      {
+        Toast.makeText(this.mContext, "µ¥»÷ÁËviewFlipper", 0).show();
+      }
+    }
+  }
+
+  public void setViewGroup(ViewGroup paramViewGroup)
+  {
+    this.viewGroup = paramViewGroup;
+  }
+
+  private class LoadImageTask extends AsyncTask<String, Void, Boolean>
+  {
+    private LoadImageTask()
+    {
+    }
+
+    protected Boolean doInBackground(String[] paramArrayOfString)
+    {
+      boolean bool1 = AdInfoView.addImagesToListFromURL(paramArrayOfString[0]);
+      boolean bool2 = false;
+      Iterator localIterator1;
+      Iterator localIterator2;
+      if (bool1)
+      {
+        localIterator1 = AdInfoView.this.imagesList.iterator();
+        if (localIterator1.hasNext())
+          break label71;
+        AdInfoView.this.addCirclesToList();
+        localIterator2 = AdInfoView.this.circlesList.iterator();
+      }
+      while (true)
+      {
+        if (!localIterator2.hasNext())
+        {
+          bool2 = true;
+          return Boolean.valueOf(bool2);
+          label71: ImageView localImageView1 = (ImageView)localIterator1.next();
+          AdInfoView.this.viewFlipper.addView(localImageView1);
+          break;
+        }
+        ImageView localImageView2 = (ImageView)localIterator2.next();
+        AdInfoView.this.linearLayout.addView(localImageView2);
+      }
+    }
+
+    protected void onPostExecute(Boolean paramBoolean)
+    {
+      if (paramBoolean.booleanValue())
+      {
+        AdInfoView.this.addView(AdInfoView.this.viewFlipper);
+        AdInfoView.this.addView(AdInfoView.this.linearLayout);
+        AdInfoView.this.viewFlipper.setFlipInterval(2000);
+        AdInfoView.this.viewFlipper.setInAnimation(AdInfoView.this.mContext, 2130968579);
+        AdInfoView.this.viewFlipper.setOutAnimation(AdInfoView.this.mContext, 2130968580);
+        AdInfoView.this.viewFlipper.startFlipping();
+        return;
+      }
+      AdInfoView.this.addImagesToList();
+      Iterator localIterator1 = AdInfoView.this.imagesList.iterator();
+      Iterator localIterator2;
+      if (!localIterator1.hasNext())
+      {
+        AdInfoView.this.addCirclesToList();
+        localIterator2 = AdInfoView.this.circlesList.iterator();
+      }
+      while (true)
+      {
+        if (!localIterator2.hasNext())
+        {
+          Log.v("postExecute", AdInfoView.this.imagesList.toString());
+          AdInfoView.this.addView(AdInfoView.this.viewFlipper);
+          AdInfoView.this.addView(AdInfoView.this.linearLayout);
+          AdInfoView.this.viewFlipper.setFlipInterval(6000);
+          AdInfoView.this.viewFlipper.setInAnimation(AdInfoView.this.mContext, 2130968579);
+          AdInfoView.this.viewFlipper.setOutAnimation(AdInfoView.this.mContext, 2130968580);
+          AdInfoView.this.viewFlipper.startFlipping();
+          return;
+          ImageView localImageView1 = (ImageView)localIterator1.next();
+          AdInfoView.this.viewFlipper.addView(localImageView1);
+          break;
+        }
+        ImageView localImageView2 = (ImageView)localIterator2.next();
+        AdInfoView.this.linearLayout.addView(localImageView2);
+      }
+    }
+  }
+}

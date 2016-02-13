@@ -1,0 +1,72 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.market.model.Item;
+import com.market.util.HandleBitmap;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+public class HavedOrderListViewAdapter extends BaseAdapter
+{
+  List<Item> itemList = new ArrayList();
+  Context mContext;
+
+  public HavedOrderListViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+  }
+
+  public int getCount()
+  {
+    return this.itemList.size();
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return this.itemList.get(paramInt);
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public List<Item> getList()
+  {
+    return this.itemList;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903082, null);
+    ImageView localImageView = (ImageView)localView.findViewById(2131034310);
+    try
+    {
+      Bitmap localBitmap = HandleBitmap.convertBitmap(new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/" + ((Item)this.itemList.get(paramInt)).getId()), 100);
+      if (localBitmap != null)
+        localImageView.setImageBitmap(localBitmap);
+      ((TextView)localView.findViewById(2131034312)).setText(((Item)this.itemList.get(paramInt)).getName());
+      ((TextView)localView.findViewById(2131034313)).setText(((Item)this.itemList.get(paramInt)).getDescription());
+      return localView;
+    }
+    catch (OutOfMemoryError localOutOfMemoryError)
+    {
+      while (true)
+        localOutOfMemoryError.printStackTrace();
+    }
+    catch (Exception localException)
+    {
+      while (true)
+        localException.printStackTrace();
+    }
+  }
+}

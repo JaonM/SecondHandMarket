@@ -1,0 +1,79 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.market.model.User;
+import com.market.util.HandleBitmap;
+import java.io.File;
+
+public class OtherPrivateSpaceListViewAdapter extends BaseAdapter
+{
+  public static String[] relativeDescription = { "default", "没错,是的,他很懒，啥也没有留下", "20", "40", "10" };
+  String[] itemArray = { "个人头像", "昵称", "个性签名", "关注的人", "关注Ta的人", "已发布" };
+  Context mContext;
+  User user;
+
+  public OtherPrivateSpaceListViewAdapter(Context paramContext, User paramUser)
+  {
+    this.mContext = paramContext;
+    this.user = paramUser;
+    relativeDescription[0] = paramUser.getNickName();
+    relativeDescription[1] = paramUser.getSelfIntroduction();
+    relativeDescription[2] = String.valueOf(paramUser.getAttentionCount());
+    relativeDescription[3] = String.valueOf(paramUser.getBeAttentionedCount());
+    relativeDescription[4] = String.valueOf(paramUser.getPublishCount());
+  }
+
+  public int getCount()
+  {
+    return this.itemArray.length;
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return null;
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    if (paramInt == 0)
+    {
+      View localView2 = LayoutInflater.from(this.mContext).inflate(2130903090, null);
+      ((TextView)localView2.findViewById(2131034342)).setText(this.itemArray[paramInt]);
+      ImageView localImageView = (ImageView)localView2.findViewById(2131034343);
+      try
+      {
+        Bitmap localBitmap = HandleBitmap.convertBitmap(new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/tempUser"), 100);
+        if (localBitmap != null)
+          localImageView.setImageBitmap(localBitmap);
+        return localView2;
+      }
+      catch (OutOfMemoryError localOutOfMemoryError)
+      {
+        localOutOfMemoryError.printStackTrace();
+        return localView2;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+        return localView2;
+      }
+    }
+    View localView1 = LayoutInflater.from(this.mContext).inflate(2130903091, null);
+    ((TextView)localView1.findViewById(2131034344)).setText(this.itemArray[paramInt]);
+    ((TextView)localView1.findViewById(2131034345)).setText(relativeDescription[(paramInt - 1)]);
+    return localView1;
+  }
+}

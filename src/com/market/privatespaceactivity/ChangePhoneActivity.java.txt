@@ -1,0 +1,129 @@
+package com.market.privatespaceactivity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.Editable;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+import com.market.util.Util;
+import java.util.HashMap;
+import java.util.Map;
+import org.json.JSONObject;
+
+public class ChangePhoneActivity extends Activity
+{
+  Button btn;
+  EditText editText;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903078);
+    this.editText = ((EditText)findViewById(2131034295));
+    this.btn = ((Button)findViewById(2131034296));
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    getActionBar().setTitle("修改手机号码");
+    this.btn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if (ChangePhoneActivity.this.editText.getText().toString().equals(""))
+        {
+          Toast.makeText(ChangePhoneActivity.this, "输入不能为空", 0).show();
+          return;
+        }
+        new ChangePhoneActivity.UpdateTask(ChangePhoneActivity.this, null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/UpdateUserServlet" });
+      }
+    });
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class UpdateTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private UpdateTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "phone");
+        localHashMap.put("value", ChangePhoneActivity.this.editText.getText().toString());
+        localHashMap.put("userId", String.valueOf(ChangePhoneActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0)));
+        String str = Util.postRequest(ChangePhoneActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          String str = new JSONObject(paramString).getString("info");
+          if (str.equals("success"))
+          {
+            this.progressDialog.dismiss();
+            Toast.makeText(ChangePhoneActivity.this, "更新成功", 0).show();
+            Intent localIntent = ChangePhoneActivity.this.getIntent();
+            localIntent.putExtra("phone", ChangePhoneActivity.this.editText.getText().toString());
+            ChangePhoneActivity.this.setResult(-1, localIntent);
+            ChangePhoneActivity.this.finish();
+            return;
+          }
+          if (!str.equals("fail"))
+            return;
+          this.progressDialog.dismiss();
+          Toast.makeText(ChangePhoneActivity.this, "更新失败", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      else
+        this.progressDialog.dismiss();
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(ChangePhoneActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("更新中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+}

@@ -1,0 +1,310 @@
+package com.market.fragment;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Fragment;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ListView;
+import android.widget.Toast;
+import com.market.activity.ItemActivity;
+import com.market.activity.MainActivity;
+import com.market.adapter2.CollectListViewAdapter;
+import com.market.model.Item;
+import com.market.util.Util;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class CollectFragment extends Fragment
+{
+  CollectListViewAdapter adapter;
+  ListView collectList;
+  View view = null;
+
+  private OutputStream createImageCacheFile(int paramInt)
+  {
+    boolean bool = Environment.getExternalStorageState().equals("mounted");
+    Object localObject = null;
+    if (bool);
+    try
+    {
+      File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache");
+      if (!localFile1.exists())
+        localFile1.mkdirs();
+      File localFile2 = new File(localFile1.getCanonicalPath() + "/" + paramInt);
+      localFile2.createNewFile();
+      FileOutputStream localFileOutputStream = new FileOutputStream(localFile2);
+      localObject = localFileOutputStream;
+      return localObject;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+    return null;
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+  }
+
+  public View onCreateView(LayoutInflater paramLayoutInflater, ViewGroup paramViewGroup, Bundle paramBundle)
+  {
+    if (!MainActivity.isLogin)
+    {
+      this.view = paramLayoutInflater.inflate(2130903050, null);
+      return this.view;
+    }
+    this.view = paramLayoutInflater.inflate(2130903048, null);
+    this.collectList = ((ListView)this.view.findViewById(2131034161));
+    this.adapter = new CollectListViewAdapter(getActivity());
+    this.collectList.setAdapter(this.adapter);
+    new GetDataTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/ItemServlet" });
+    this.collectList.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        Intent localIntent = new Intent(CollectFragment.this.getActivity(), ItemActivity.class);
+        localIntent.putExtra("item", (Serializable)CollectFragment.this.adapter.getList().get(paramAnonymousInt));
+        CollectFragment.this.startActivity(localIntent);
+      }
+    });
+    this.collectList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+    {
+      public boolean onItemLongClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, final int paramAnonymousInt, long paramAnonymousLong)
+      {
+        new AlertDialog.Builder(CollectFragment.this.getActivity()).setTitle("确定取消收藏吗").setPositiveButton("是", new DialogInterface.OnClickListener()
+        {
+          public void onClick(DialogInterface paramAnonymous2DialogInterface, int paramAnonymous2Int)
+          {
+            CollectFragment.CancelCollectTask localCancelCollectTask = new CollectFragment.CancelCollectTask(CollectFragment.this, null);
+            Integer[] arrayOfInteger = new Integer[1];
+            arrayOfInteger[0] = Integer.valueOf(((Item)CollectFragment.this.adapter.getList().get(paramAnonymousInt)).getId());
+            localCancelCollectTask.execute(arrayOfInteger);
+            CollectFragment.this.adapter.getList().remove(paramAnonymousInt);
+            CollectFragment.this.adapter.notifyDataSetChanged();
+          }
+        }).setNegativeButton("否", null).create().show();
+        return false;
+      }
+    });
+    return this.view;
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+  }
+
+  public void onResume()
+  {
+    super.onResume();
+    if (this.view != null)
+      this.view.invalidate();
+  }
+
+  private class CancelCollectTask extends AsyncTask<Integer, Void, Void>
+  {
+    private CancelCollectTask()
+    {
+    }
+
+    public Void doInBackground(Integer[] paramArrayOfInteger)
+    {
+      HashMap localHashMap = new HashMap();
+      localHashMap.put("key", "delete");
+      localHashMap.put("itemId", String.valueOf(paramArrayOfInteger[0]));
+      localHashMap.put("userId", String.valueOf(CollectFragment.this.getActivity().getSharedPreferences("islogin", 0).getInt("userId", -1)));
+      try
+      {
+        Util.postRequest(CollectFragment.this.getActivity(), "http://10.96.73.76:8080/SecondHandMarket/CollectServlet", localHashMap);
+        return null;
+      }
+      catch (Exception localException)
+      {
+        while (true)
+          localException.printStackTrace();
+      }
+    }
+  }
+
+  private class GetDataTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private GetDataTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "collect");
+        localHashMap.put("start", String.valueOf(0));
+        localHashMap.put("end", String.valueOf(1));
+        localHashMap.put("userId", String.valueOf(CollectFragment.this.getActivity().getSharedPreferences("islogin", 0).getInt("userId", -1)));
+        String str = Util.postRequest(CollectFragment.this.getActivity(), paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+      {
+        this.progressDialog.dismiss();
+        try
+        {
+          JSONObject localJSONObject1 = new JSONObject(paramString);
+          String str = localJSONObject1.getString("info");
+          JSONArray localJSONArray;
+          int j;
+          int k;
+          if (str.equals("success"))
+          {
+            localJSONArray = localJSONObject1.getJSONArray("result");
+            j = 0;
+            if (j >= localJSONArray.length())
+            {
+              k = 0;
+              label62: if (k < CollectFragment.this.adapter.getList().size())
+                break label388;
+            }
+          }
+          while (true)
+          {
+            CollectFragment.this.adapter.notifyDataSetChanged();
+            SharedPreferences localSharedPreferences = CollectFragment.this.getActivity().getSharedPreferences("collectCount", 0);
+            int i = localSharedPreferences.getInt("collectCount", -1);
+            if ((i > CollectFragment.this.adapter.getList().size()) && (i != -1))
+              Toast.makeText(CollectFragment.this.getActivity(), "你收藏的物品当中,有些物品卖出去了或者下架了", 1).show();
+            localSharedPreferences.edit().putInt("collectCount", CollectFragment.this.adapter.getList().size()).commit();
+            return;
+            Item localItem = new Item();
+            JSONObject localJSONObject2 = localJSONArray.getJSONObject(j);
+            localItem.setId(localJSONObject2.getInt("id"));
+            localItem.setName(localJSONObject2.getString("name"));
+            localItem.setPrice(localJSONObject2.getDouble("price"));
+            localItem.setDescription(localJSONObject2.getString("description"));
+            localItem.setPhotoCount(localJSONObject2.getInt("photoCount"));
+            localItem.setOwnerId(localJSONObject2.getInt("ownerId"));
+            localItem.setCollectCount(localJSONObject2.getInt("collectCount"));
+            localItem.setClassfication1(localJSONObject2.getString("classfication1"));
+            localItem.setClassfication2(localJSONObject2.getString("classfication2"));
+            localItem.setStatus(localJSONObject2.getInt("status"));
+            localItem.setBuyerId(localJSONObject2.getInt("buyerId"));
+            localItem.setPhotoPathOnServer(localJSONObject2.getString("photoPath").split(","));
+            CollectFragment.this.adapter.getList().add(localItem);
+            j++;
+            break;
+            label388: CollectFragment.GetImageTask localGetImageTask = new CollectFragment.GetImageTask(CollectFragment.this);
+            Integer[] arrayOfInteger = new Integer[1];
+            arrayOfInteger[0] = Integer.valueOf(k);
+            localGetImageTask.execute(arrayOfInteger);
+            k++;
+            break label62;
+            if (str.equals("fail"))
+              Toast.makeText(CollectFragment.this.getActivity(), "不好意思,服务器出错了", 0).show();
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      }
+      Toast.makeText(CollectFragment.this.getActivity(), "不好意思,服务器开了小差...内容无法显示了", 0).show();
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(CollectFragment.this.getActivity());
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("获取中");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+
+  class GetImageTask extends AsyncTask<Integer, Void, Bitmap>
+  {
+    GetImageTask()
+    {
+    }
+
+    public Bitmap doInBackground(Integer[] paramArrayOfInteger)
+    {
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL("http://10.96.73.76:8080/SecondHandMarket/" + ((Item)CollectFragment.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getPhotoPathOnServer()[0]).openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        byte[] arrayOfByte = new byte[1024];
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+        while (true)
+        {
+          int i = localInputStream.read(arrayOfByte);
+          if (i == -1)
+          {
+            localInputStream.close();
+            localByteArrayOutputStream.flush();
+            if (!new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache" + "/" + ((Item)CollectFragment.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getId()).exists())
+            {
+              OutputStream localOutputStream = CollectFragment.this.createImageCacheFile(((Item)CollectFragment.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getId());
+              localOutputStream.write(localByteArrayOutputStream.toByteArray());
+              localOutputStream.close();
+            }
+            localByteArrayOutputStream.close();
+            localHttpURLConnection.disconnect();
+            return null;
+          }
+          localByteArrayOutputStream.write(arrayOfByte, 0, i);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(Bitmap paramBitmap)
+    {
+      CollectFragment.this.adapter.notifyDataSetChanged();
+    }
+  }
+}

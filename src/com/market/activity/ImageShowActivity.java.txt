@@ -1,0 +1,42 @@
+package com.market.activity;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.widget.ImageView;
+
+public class ImageShowActivity extends Activity
+{
+  Bitmap bitmap;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    requestWindowFeature(1);
+    getWindow().setFlags(1024, 1024);
+    setContentView(2130903058);
+    try
+    {
+      this.bitmap = BitmapFactory.decodeFile(getIntent().getStringExtra("path"));
+      ImageView localImageView = (ImageView)findViewById(2131034227);
+      localImageView.setImageBitmap(this.bitmap);
+      localImageView.setOnClickListener(new View.OnClickListener()
+      {
+        public void onClick(View paramAnonymousView)
+        {
+          ImageShowActivity.this.finish();
+        }
+      });
+      return;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+}

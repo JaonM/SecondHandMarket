@@ -1,0 +1,147 @@
+package com.market.adapter;
+
+import android.content.Context;
+import android.os.AsyncTask;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.market.model.Classfication;
+import com.market.util.Util;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class ClassficationListAdapter extends BaseAdapter
+{
+  public static String[] classfication = { "学习用品", "数码电器", "闲置日用", "体育用品", "衣鞋配饰", "其他" };
+  public static int[] images = { 2130837563, 2130837524, 2130837521, 2130837562, 2130837513, 2130837553 };
+  public static String[] specificClassfication = { "书籍资料  文具  学习工具  其他", "电脑  手机  照相机  平板  播放器  移动硬盘/USB  耳机  其他 ", "椅子  桌子  照明  风扇  床上用品  架子  饰品  饮水机 背包 其他", "自行车  篮球  足球  网球  羽毛球  乒乓球  排球  运动器械  其他", "上衣女  下装女  女鞋  男鞋  套装  围巾配饰  女士包  男装  其他", "其他" };
+  private Map<Integer, List<Classfication>> classficationMap;
+  Context mContext;
+
+  public ClassficationListAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    this.classficationMap = new HashMap();
+    for (int i = 1; ; i++)
+    {
+      if (i > 6)
+        return;
+      GetClassficationTask localGetClassficationTask = new GetClassficationTask();
+      Integer[] arrayOfInteger = new Integer[1];
+      arrayOfInteger[0] = Integer.valueOf(i);
+      localGetClassficationTask.execute(arrayOfInteger);
+    }
+  }
+
+  public int getCount()
+  {
+    return classfication.length;
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return null;
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public Map<Integer, List<Classfication>> getMap()
+  {
+    return this.classficationMap;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903069, null);
+    ImageView localImageView = (ImageView)localView.findViewById(2131034264);
+    TextView localTextView1 = (TextView)localView.findViewById(2131034265);
+    TextView localTextView2 = (TextView)localView.findViewById(2131034266);
+    localImageView.setImageResource(images[paramInt]);
+    localTextView1.setText(classfication[paramInt]);
+    List localList = (List)this.classficationMap.get(Integer.valueOf(paramInt + 1));
+    StringBuilder localStringBuilder = new StringBuilder();
+    Iterator localIterator;
+    if (localList != null)
+      localIterator = localList.iterator();
+    while (true)
+    {
+      if (!localIterator.hasNext())
+      {
+        localTextView2.setText(localStringBuilder.toString());
+        return localView;
+      }
+      localStringBuilder.append(((Classfication)localIterator.next()).getClassfication2Name() + " ");
+    }
+  }
+
+  class GetClassficationTask extends AsyncTask<Integer, Void, String[]>
+  {
+    GetClassficationTask()
+    {
+    }
+
+    public String[] doInBackground(Integer[] paramArrayOfInteger)
+    {
+      try
+      {
+        String str2 = Util.getRequest(ClassficationListAdapter.this.mContext, "http://10.96.73.76:8080/SecondHandMarket/ClassficationServlet?key=classfication&classfication1Id=" + String.valueOf(paramArrayOfInteger[0]));
+        str1 = str2;
+        String[] arrayOfString = new String[2];
+        arrayOfString[0] = str1;
+        arrayOfString[1] = String.valueOf(paramArrayOfInteger[0]);
+        return arrayOfString;
+      }
+      catch (Exception localException)
+      {
+        while (true)
+        {
+          localException.printStackTrace();
+          String str1 = null;
+        }
+      }
+    }
+
+    public void onPostExecute(String[] paramArrayOfString)
+    {
+      if (paramArrayOfString[0] != null)
+        try
+        {
+          JSONObject localJSONObject1 = new JSONObject(paramArrayOfString[0]);
+          if (localJSONObject1.getString("info").equals("success"))
+          {
+            JSONArray localJSONArray = localJSONObject1.getJSONArray("results");
+            ArrayList localArrayList = new ArrayList();
+            for (int i = 0; ; i++)
+            {
+              if (i >= localJSONArray.length())
+              {
+                ClassficationListAdapter.this.classficationMap.put(Integer.valueOf(paramArrayOfString[1]), localArrayList);
+                ClassficationListAdapter.this.notifyDataSetChanged();
+                return;
+              }
+              JSONObject localJSONObject2 = localJSONArray.getJSONObject(i);
+              Classfication localClassfication = new Classfication();
+              localClassfication.setClassfication1Id(Integer.valueOf(localJSONObject2.getInt("classfication1Id")).intValue());
+              localClassfication.setClassfication2Name(localJSONObject2.getString("classfication2Name"));
+              localArrayList.add(localClassfication);
+            }
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+  }
+}

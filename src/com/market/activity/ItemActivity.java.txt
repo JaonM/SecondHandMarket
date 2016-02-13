@@ -1,0 +1,555 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.market.adapter2.ItemActivityViewPagerAdapter;
+import com.market.itemactivity.LeaveMessageActivity;
+import com.market.model.Item;
+import com.market.model.User;
+import com.market.util.HandleBitmap;
+import com.market.util.Util;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONObject;
+
+public class ItemActivity extends Activity
+{
+  public static int pictureIndex;
+  ItemActivityViewPagerAdapter adapter;
+  Button buyBtn;
+  TextView c1Text;
+  TextView c2Text;
+  LinearLayout circleLayout;
+  ArrayList<ImageView> circleList = new ArrayList();
+  MenuItem collectItem;
+  int count = 0;
+  ArrayList<ImageView> imageList = new ArrayList();
+  Item item;
+  TextView itemContentText;
+  TextView itemNameText;
+  Button itemOwnerText;
+  TextView itemPriceText;
+  int lastIndex = 0;
+  Button ownerBtn;
+  List<String> picturePath = new ArrayList();
+  User user = new User();
+  ViewPager viewPager;
+
+  private void initCircleList(int paramInt)
+  {
+    this.circleLayout = ((LinearLayout)findViewById(2131034230));
+    int i = 0;
+    if (i >= paramInt)
+      return;
+    ImageView localImageView = new ImageView(this);
+    localImageView.setLayoutParams(new ViewGroup.LayoutParams(-2, -2));
+    localImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+    if (i == 0)
+      localImageView.setImageResource(2130837511);
+    while (true)
+    {
+      this.circleList.add(localImageView);
+      this.circleLayout.addView(localImageView);
+      i++;
+      break;
+      localImageView.setImageResource(2130837510);
+    }
+  }
+
+  private void initViewPager()
+  {
+    this.viewPager = ((ViewPager)findViewById(2131034229));
+    this.viewPager.setAdapter(this.adapter);
+    this.viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener()
+    {
+      public void onPageScrollStateChanged(int paramAnonymousInt)
+      {
+      }
+
+      public void onPageScrolled(int paramAnonymousInt1, float paramAnonymousFloat, int paramAnonymousInt2)
+      {
+      }
+
+      public void onPageSelected(int paramAnonymousInt)
+      {
+        ((ImageView)ItemActivity.this.circleList.get(paramAnonymousInt)).setImageResource(2130837511);
+        ItemActivity.pictureIndex = paramAnonymousInt;
+        if (paramAnonymousInt == 0)
+        {
+          ((ImageView)ItemActivity.this.circleList.get((paramAnonymousInt + 1) % ItemActivity.this.circleList.size())).setImageResource(2130837510);
+          ((ImageView)ItemActivity.this.circleList.get(-1 + ItemActivity.this.circleList.size())).setImageResource(2130837510);
+          return;
+        }
+        ((ImageView)ItemActivity.this.circleList.get((paramAnonymousInt - 1) % ItemActivity.this.circleList.size())).setImageResource(2130837510);
+        ((ImageView)ItemActivity.this.circleList.get((paramAnonymousInt + 1) % ItemActivity.this.circleList.size())).setImageResource(2130837510);
+      }
+    });
+    this.viewPager.setCurrentItem(0);
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903059);
+    pictureIndex = 0;
+    this.adapter = new ItemActivityViewPagerAdapter(this);
+    this.item = ((Item)getIntent().getSerializableExtra("item"));
+    this.count = this.item.getPhotoCount();
+    initCircleList(this.count);
+    initViewPager();
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.itemNameText = ((TextView)findViewById(2131034231));
+    this.itemPriceText = ((TextView)findViewById(2131034232));
+    this.itemContentText = ((TextView)findViewById(2131034235));
+    this.itemOwnerText = ((Button)findViewById(2131034236));
+    this.c1Text = ((TextView)findViewById(2131034233));
+    this.c2Text = ((TextView)findViewById(2131034234));
+    this.itemNameText.setText(this.item.getName());
+    this.itemPriceText.setText("￥" + String.valueOf(this.item.getPrice()));
+    this.itemContentText.setText(this.item.getDescription());
+    this.c1Text.setText(this.item.getClassfication1());
+    this.c2Text.setText(this.item.getClassfication2());
+    this.ownerBtn = ((Button)findViewById(2131034238));
+    Log.v("buyerId", this.item.getBuyerId());
+    if (getSharedPreferences("islogin", 0).getInt("userId", -1) == this.item.getBuyerId())
+    {
+      this.ownerBtn.setVisibility(0);
+      Log.v("here", "here");
+    }
+    this.ownerBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        Intent localIntent = new Intent(ItemActivity.this, UserInfoActivity.class);
+        localIntent.putExtra("userId", ItemActivity.this.item.getOwnerId());
+        ItemActivity.this.startActivity(localIntent);
+      }
+    });
+    this.buyBtn = ((Button)findViewById(2131034237));
+    this.buyBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if (ItemActivity.this.user.getId() == ItemActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0))
+        {
+          Toast.makeText(ItemActivity.this, "你是该物品的物主", 0).show();
+          return;
+        }
+        if (MainActivity.isLogin)
+        {
+          new AlertDialog.Builder(ItemActivity.this).setTitle("确定购买吗").setMessage("确定之后可以获得物主的联系方式并尽快与之联系").setPositiveButton("确定", new DialogInterface.OnClickListener()
+          {
+            public void onClick(DialogInterface paramAnonymous2DialogInterface, int paramAnonymous2Int)
+            {
+              new ItemActivity.BuyTask(ItemActivity.this, null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/ItemServlet" });
+            }
+          }).setNegativeButton("取消", null).create().show();
+          return;
+        }
+        Intent localIntent = new Intent(ItemActivity.this, LoginActivity.class);
+        ItemActivity.this.startActivity(localIntent);
+      }
+    });
+    if (this.item.getStatus() == 1)
+    {
+      this.buyBtn.setText("已被预订");
+      this.buyBtn.setClickable(false);
+      this.buyBtn.setBackgroundColor(-65536);
+    }
+    for (int i = 0; ; i++)
+    {
+      if (i >= this.item.getPhotoPathOnServer().length)
+      {
+        new GetUserTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/UserServlet" });
+        this.itemOwnerText.setOnClickListener(new View.OnClickListener()
+        {
+          public void onClick(View paramAnonymousView)
+          {
+            Intent localIntent = new Intent(ItemActivity.this, OtherPrivateSpaceActivity.class);
+            localIntent.putExtra("user", ItemActivity.this.user);
+            if (ItemActivity.this.user.getId() != ItemActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0))
+              ItemActivity.this.startActivity(localIntent);
+          }
+        });
+        return;
+        if (this.item.getStatus() != 2)
+          break;
+        this.buyBtn.setText("已售出");
+        this.buyBtn.setClickable(false);
+        this.buyBtn.setBackgroundColor(-65536);
+        break;
+      }
+      LoadImageTask localLoadImageTask = new LoadImageTask();
+      String[] arrayOfString = new String[2];
+      arrayOfString[0] = ("http://10.96.73.76:8080/SecondHandMarket/" + this.item.getPhotoPathOnServer()[i]);
+      arrayOfString[1] = String.valueOf(i);
+      localLoadImageTask.execute(arrayOfString);
+    }
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    int i = 0;
+    try
+    {
+      while (true)
+      {
+        if (i >= this.item.getPhotoPathOnServer().length)
+          return;
+        File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/" + i);
+        if (localFile.exists())
+          localFile.delete();
+        i++;
+      }
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    case 2131034429:
+    case 2131034430:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+      continue;
+      Intent localIntent = new Intent(this, LeaveMessageActivity.class);
+      localIntent.putExtra("itemId", this.item.getId());
+      startActivity(localIntent);
+      continue;
+      this.collectItem = paramMenuItem;
+      if (MainActivity.isLogin)
+        new CollectTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/CollectServlet" });
+      else
+        Toast.makeText(this, "登陆了才能收藏物品哦", 0).show();
+    }
+  }
+
+  public boolean onPrepareOptionsMenu(Menu paramMenu)
+  {
+    new MenuInflater(this).inflate(2131361793, paramMenu);
+    new AsyncTask()
+    {
+      public String doInBackground(String[] paramAnonymousArrayOfString)
+      {
+        try
+        {
+          HashMap localHashMap = new HashMap();
+          localHashMap.put("key", "check");
+          localHashMap.put("userId", String.valueOf(ItemActivity.this.getSharedPreferences("islogin", 0).getInt("userId", -1)));
+          localHashMap.put("itemId", String.valueOf(ItemActivity.this.item.getId()));
+          return null;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+        return null;
+      }
+
+      public void onPostExecute(String paramAnonymousString)
+      {
+        if (paramAnonymousString != null);
+        try
+        {
+          if (new JSONObject(paramAnonymousString).getBoolean("isCollected"))
+            this.val$collectItem.setIcon(2130837520);
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+      }
+    }
+    .execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/CollectServlet" });
+    return super.onCreateOptionsMenu(paramMenu);
+  }
+
+  private class BuyTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private BuyTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "buy");
+        localHashMap.put("start", "0");
+        localHashMap.put("end", "0");
+        localHashMap.put("itemId", String.valueOf(ItemActivity.this.item.getId()));
+        localHashMap.put("userId", String.valueOf(ItemActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0)));
+        String str = Util.postRequest(ItemActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          if (new JSONObject(paramString).getString("info").equals("success"))
+          {
+            this.progressDialog.dismiss();
+            Toast.makeText(ItemActivity.this, "购买成功,你的个人信息将会出现在买家那,同时你也可以在下方的按钮处单击查看物主联系方式等信息,请尽快联系对方完成交易", 5000).show();
+            ItemActivity.this.ownerBtn.setVisibility(0);
+            ItemActivity.this.buyBtn.setText("已被预订");
+            ItemActivity.this.buyBtn.setClickable(false);
+            ItemActivity.this.buyBtn.setBackgroundColor(-65536);
+            return;
+          }
+          this.progressDialog.dismiss();
+          Toast.makeText(ItemActivity.this, "网络原因,购买失败", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(ItemActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("预定中");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+
+  private class CollectTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private CollectTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("userId", String.valueOf(ItemActivity.this.getSharedPreferences("islogin", 0).getInt("userId", -1)));
+        localHashMap.put("itemId", String.valueOf(ItemActivity.this.item.getId()));
+        localHashMap.put("key", "insert");
+        String str = Util.postRequest(ItemActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+      {
+        this.progressDialog.dismiss();
+        Log.v("result", paramString);
+      }
+      try
+      {
+        JSONObject localJSONObject = new JSONObject(paramString);
+        if (localJSONObject.getString("info").equals("success"))
+          ItemActivity.this.collectItem.setIcon(2130837520);
+        String str = localJSONObject.getString("result");
+        Toast.makeText(ItemActivity.this, str, 0).show();
+        return;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(ItemActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("收藏中");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+
+  private class GetUserTask extends AsyncTask<String, Void, String>
+  {
+    private GetUserTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("userId", String.valueOf(ItemActivity.this.item.getOwnerId()));
+        String str = Util.postRequest(ItemActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          JSONObject localJSONObject = new JSONObject(paramString);
+          if (localJSONObject.getString("info").equals("success"))
+          {
+            ItemActivity.this.itemOwnerText.setText(localJSONObject.getString("nickName"));
+            String str1 = localJSONObject.getString("name");
+            String str2 = localJSONObject.getString("phone");
+            int i = localJSONObject.getInt("sex");
+            String str3 = localJSONObject.getString("selfIntroduction");
+            String str4 = localJSONObject.getString("photopath");
+            String str5 = localJSONObject.getString("attentionCount");
+            String str6 = localJSONObject.getString("beAttentionedCount");
+            String str7 = localJSONObject.getString("publishCount");
+            String str8 = localJSONObject.getString("sno");
+            String str9 = localJSONObject.getString("nickName");
+            ItemActivity.this.user.setId(ItemActivity.this.item.getOwnerId());
+            ItemActivity.this.user.setName(str1);
+            ItemActivity.this.user.setNickName(str9);
+            ItemActivity.this.user.setPhone(str2);
+            ItemActivity.this.user.setSex((byte)i);
+            ItemActivity.this.user.setSelfIntroduction(str3);
+            ItemActivity.this.user.setPhotoPathOnServer(str4);
+            ItemActivity.this.user.setSNo(str8);
+            ItemActivity.this.user.setAttentionCount(Integer.valueOf(str5).intValue());
+            ItemActivity.this.user.setBeAttentionedCount(Integer.valueOf(str6).intValue());
+            ItemActivity.this.user.setPublishCount(Integer.valueOf(str7).intValue());
+            return;
+          }
+          ItemActivity.this.itemOwnerText.setText("null");
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+  }
+
+  class LoadImageTask extends AsyncTask<String, Void, Bitmap>
+  {
+    LoadImageTask()
+    {
+    }
+
+    protected Bitmap doInBackground(String[] paramArrayOfString)
+    {
+      Bitmap localBitmap = null;
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL(paramArrayOfString[0]).openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        byte[] arrayOfByte = new byte[1024];
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+        while (true)
+        {
+          int i = localInputStream.read(arrayOfByte);
+          localBitmap = null;
+          if (i == -1)
+          {
+            File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/" + paramArrayOfString[1]);
+            ItemActivity.this.picturePath.add(localFile.getCanonicalPath());
+            FileOutputStream localFileOutputStream = new FileOutputStream(localFile);
+            localFileOutputStream.write(localByteArrayOutputStream.toByteArray());
+            localBitmap = HandleBitmap.convertBitmap(localFile, 300);
+            localFileOutputStream.close();
+            ItemActivity.this.adapter.getMap().put(Integer.valueOf(paramArrayOfString[1]), localFile.getCanonicalPath());
+            return localBitmap;
+          }
+          localByteArrayOutputStream.write(arrayOfByte, 0, i);
+        }
+      }
+      catch (OutOfMemoryError localOutOfMemoryError)
+      {
+        localOutOfMemoryError.printStackTrace();
+        return localBitmap;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return localBitmap;
+    }
+
+    protected void onPostExecute(Bitmap paramBitmap)
+    {
+      if (paramBitmap != null)
+      {
+        ItemActivity.this.adapter.addBitmap(paramBitmap);
+        ItemActivity.this.adapter.notifyDataSetChanged();
+        return;
+      }
+      Toast.makeText(ItemActivity.this, "图片没刷出来...", 0).show();
+    }
+  }
+}

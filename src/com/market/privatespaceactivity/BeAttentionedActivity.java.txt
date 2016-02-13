@@ -1,0 +1,279 @@
+package com.market.privatespaceactivity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.market.activity.OtherPrivateSpaceActivity;
+import com.market.adapter2.BeAttentionedListViewAdapter;
+import com.market.fragment.MainFragment;
+import com.market.model.User;
+import com.market.util.Util;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class BeAttentionedActivity extends Activity
+{
+  private static final int BE_ATTENTIONED = 1;
+  BeAttentionedListViewAdapter adapter;
+  int count = 0;
+  ListView listView;
+  LinearLayout newsCountLayout;
+  TextView newsCountText;
+  ScrollView scrollView;
+  int userId;
+
+  public void onActivityResult(int paramInt1, int paramInt2, Intent paramIntent)
+  {
+    super.onActivityResult(paramInt1, paramInt2, paramIntent);
+    switch (paramInt1)
+    {
+    default:
+    case 1:
+    }
+    do
+    {
+      do
+        return;
+      while ((paramInt2 != -1) || (paramIntent == null));
+      this.count = paramIntent.getIntExtra("count", -1);
+    }
+    while (this.count == -1);
+    if (this.count == 0)
+    {
+      this.newsCountLayout.setVisibility(8);
+      return;
+    }
+    this.newsCountText.setText("您有" + this.count + "条新消息");
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903042);
+    this.newsCountText = ((TextView)findViewById(2131034131));
+    this.listView = ((ListView)findViewById(2131034132));
+    this.newsCountLayout = ((LinearLayout)findViewById(2131034130));
+    this.scrollView = ((ScrollView)findViewById(2131034129));
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.count = getIntent().getIntExtra("newsCount", 0);
+    String str = getIntent().getStringExtra("beAttentionedUser");
+    if (str.equals("self"))
+      setTitle("关注我的人");
+    for (this.userId = getSharedPreferences("islogin", 0).getInt("userId", 0); ; this.userId = getIntent().getIntExtra("userId", 0))
+    {
+      if ((this.count > 0) && (str.equals("self")))
+      {
+        this.newsCountLayout.setVisibility(0);
+        this.newsCountText.setText("您有" + this.count + "条新消息");
+        this.newsCountLayout.setFocusable(true);
+        this.newsCountLayout.setFocusableInTouchMode(true);
+        this.newsCountLayout.requestFocus();
+      }
+      this.newsCountText.setOnClickListener(new View.OnClickListener()
+      {
+        public void onClick(View paramAnonymousView)
+        {
+          Intent localIntent = new Intent(BeAttentionedActivity.this, LatelyNewsShowActivity.class);
+          localIntent.putExtra("newsFlag", 1);
+          BeAttentionedActivity.this.startActivityForResult(localIntent, 1);
+        }
+      });
+      this.adapter = new BeAttentionedListViewAdapter(this);
+      this.listView.setAdapter(this.adapter);
+      MainFragment.setListViewChildHeight(this.listView);
+      this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+      {
+        public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+        {
+          Intent localIntent = new Intent(BeAttentionedActivity.this, OtherPrivateSpaceActivity.class);
+          localIntent.putExtra("user", (Serializable)BeAttentionedActivity.this.adapter.getList().get(paramAnonymousInt));
+          BeAttentionedActivity.this.startActivity(localIntent);
+        }
+      });
+      new GetDataTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/RelationshipServlet" });
+      return;
+      setTitle("关注" + str + "的人");
+    }
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    try
+    {
+      Iterator localIterator = this.adapter.getList().iterator();
+      while (true)
+      {
+        if (!localIterator.hasNext())
+          return;
+        User localUser = (User)localIterator.next();
+        File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/" + localUser.getId());
+        if (localFile.exists())
+          localFile.delete();
+      }
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class GetDataTask extends AsyncTask<String, Void, String>
+  {
+    private GetDataTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "beAttentioned");
+        localHashMap.put("userId", String.valueOf(BeAttentionedActivity.this.userId));
+        String str = Util.postRequest(BeAttentionedActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          JSONObject localJSONObject1 = new JSONObject(paramString);
+          if (localJSONObject1.getString("info").equals("success"))
+          {
+            JSONArray localJSONArray = localJSONObject1.getJSONArray("results");
+            for (int i = 0; ; i++)
+            {
+              if (i >= localJSONArray.length())
+                return;
+              JSONObject localJSONObject2 = localJSONArray.getJSONObject(i);
+              int j = localJSONObject2.getInt("userId");
+              String str1 = localJSONObject2.getString("name");
+              String str2 = localJSONObject2.getString("phone");
+              String str3 = localJSONObject2.getString("nickName");
+              int k = localJSONObject2.getInt("sex");
+              String str4 = localJSONObject2.getString("selfIntroduction");
+              String str5 = localJSONObject2.getString("photopath");
+              String str6 = localJSONObject2.getString("attentionCount");
+              String str7 = localJSONObject2.getString("beAttentionedCount");
+              String str8 = localJSONObject2.getString("publishCount");
+              String str9 = localJSONObject2.getString("sno");
+              User localUser = new User();
+              localUser.setId(j);
+              localUser.setName(str1);
+              localUser.setPhone(str2);
+              localUser.setSex((byte)k);
+              localUser.setSelfIntroduction(str4);
+              localUser.setNickName(str3);
+              localUser.setSNo(str9);
+              localUser.setPhotoPathOnServer(str5);
+              localUser.setAttentionCount(Integer.valueOf(str6).intValue());
+              localUser.setBeAttentionedCount(Integer.valueOf(str7).intValue());
+              localUser.setPublishCount(Integer.valueOf(str8).intValue());
+              BeAttentionedActivity.this.adapter.getList().add(localUser);
+              BeAttentionedActivity.this.adapter.notifyDataSetChanged();
+              new BeAttentionedActivity.GetImageTask(BeAttentionedActivity.this, null).execute(new User[] { localUser });
+            }
+          }
+          Toast.makeText(BeAttentionedActivity.this, "加载用户列表失败", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+  }
+
+  private class GetImageTask extends AsyncTask<User, Void, Void>
+  {
+    private GetImageTask()
+    {
+    }
+
+    public Void doInBackground(User[] paramArrayOfUser)
+    {
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL("http://10.96.73.76:8080/SecondHandMarket/" + paramArrayOfUser[0].getPhotoPathOnServer()).openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        localHttpURLConnection.setRequestProperty("Charset", "UTF-8");
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache");
+        localFile1.mkdirs();
+        File localFile2 = new File(localFile1.getCanonicalPath() + "/" + paramArrayOfUser[0].getId());
+        localFile2.createNewFile();
+        FileOutputStream localFileOutputStream = new FileOutputStream(localFile2);
+        byte[] arrayOfByte = new byte[1024];
+        while (true)
+        {
+          int i = localInputStream.read(arrayOfByte);
+          if (i == -1)
+          {
+            localFileOutputStream.flush();
+            localInputStream.close();
+            localFileOutputStream.close();
+            break;
+          }
+          localFileOutputStream.write(arrayOfByte, 0, i);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(Void paramVoid)
+    {
+      BeAttentionedActivity.this.adapter.notifyDataSetChanged();
+    }
+  }
+}

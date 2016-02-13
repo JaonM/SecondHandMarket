@@ -1,0 +1,49 @@
+package com.market.model;
+
+public class Advertisement
+{
+  private int id;
+  private String photoPath;
+  private String url;
+
+  public Advertisement()
+  {
+  }
+
+  public Advertisement(int paramInt, String paramString1, String paramString2)
+  {
+    this.id = paramInt;
+    this.photoPath = paramString1;
+    this.url = paramString2;
+  }
+
+  public int getId()
+  {
+    return this.id;
+  }
+
+  public String getPhotoPath()
+  {
+    return this.photoPath;
+  }
+
+  public String getUrl()
+  {
+    return this.url;
+  }
+
+  public void setId(int paramInt)
+  {
+    this.id = paramInt;
+  }
+
+  public void setPhotoPath(String paramString)
+  {
+    this.photoPath = paramString;
+  }
+
+  public void setUrl(String paramString)
+  {
+    this.url = paramString;
+  }
+}

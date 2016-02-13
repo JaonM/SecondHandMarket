@@ -1,0 +1,339 @@
+package com.market.privatespaceactivity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.market.adapter2.HavedPublishListViewAdapter;
+import com.market.fragment.MainFragment;
+import com.market.model.Item;
+import com.market.util.Util;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class HavedPublishActivity extends Activity
+{
+  private static final int HAVED_PUBLISH = 1;
+  HavedPublishListViewAdapter adapter;
+  int count = 1;
+  ListView listView;
+  LinearLayout newsCountLayout;
+  TextView newsCountText;
+  int userId;
+
+  private OutputStream createImageCacheFile(int paramInt)
+  {
+    boolean bool = Environment.getExternalStorageState().equals("mounted");
+    Object localObject = null;
+    if (bool);
+    try
+    {
+      File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache");
+      if (!localFile1.exists())
+        localFile1.mkdirs();
+      File localFile2 = new File(localFile1.getCanonicalPath() + "/" + paramInt);
+      localFile2.createNewFile();
+      FileOutputStream localFileOutputStream = new FileOutputStream(localFile2);
+      localObject = localFileOutputStream;
+      return localObject;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+    return null;
+  }
+
+  public void onActivityResult(int paramInt1, int paramInt2, Intent paramIntent)
+  {
+    super.onActivityResult(paramInt1, paramInt2, paramIntent);
+    switch (paramInt1)
+    {
+    default:
+    case 1:
+    }
+    do
+    {
+      do
+        return;
+      while ((paramInt2 != -1) || (paramIntent == null));
+      this.count = paramIntent.getIntExtra("count", -1);
+    }
+    while (this.count == -1);
+    if (this.count == 0)
+    {
+      this.newsCountLayout.setVisibility(8);
+      return;
+    }
+    this.newsCountText.setText("您有" + this.count + "条新消息");
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903084);
+    this.newsCountLayout = ((LinearLayout)findViewById(2131034315));
+    this.newsCountText = ((TextView)findViewById(2131034316));
+    this.count = getIntent().getIntExtra("newsCount", 0);
+    String str = getIntent().getStringExtra("havedPublishUser");
+    Log.v("name", str);
+    if (str.equals("self"))
+      getActionBar().setTitle("我发布的物品");
+    for (this.userId = getSharedPreferences("islogin", 0).getInt("userId", -1); ; this.userId = getIntent().getIntExtra("userId", 0))
+    {
+      if ((this.count > 0) && (str.equals("self")))
+      {
+        this.newsCountLayout.setVisibility(0);
+        this.newsCountText.setText("您有" + this.count + "条新消息");
+        this.newsCountLayout.setFocusable(true);
+        this.newsCountLayout.setFocusableInTouchMode(true);
+        this.newsCountLayout.requestFocus();
+      }
+      this.newsCountText.setOnClickListener(new View.OnClickListener()
+      {
+        public void onClick(View paramAnonymousView)
+        {
+          Intent localIntent = new Intent(HavedPublishActivity.this, LatelyNewsShowActivity.class);
+          localIntent.putExtra("newsFlag", 2);
+          HavedPublishActivity.this.startActivityForResult(localIntent, 1);
+        }
+      });
+      getActionBar().setDisplayHomeAsUpEnabled(true);
+      this.listView = ((ListView)findViewById(2131034317));
+      this.adapter = new HavedPublishListViewAdapter(this);
+      this.listView.setAdapter(this.adapter);
+      MainFragment.setListViewChildHeight(this.listView);
+      this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+      {
+        public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+        {
+          Intent localIntent = new Intent(HavedPublishActivity.this, HavedPublishItemActivity.class);
+          localIntent.putExtra("item", (Serializable)HavedPublishActivity.this.adapter.getList().get(paramAnonymousInt));
+          HavedPublishActivity.this.startActivity(localIntent);
+        }
+      });
+      return;
+      getActionBar().setTitle(str + "发布的物品");
+    }
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    try
+    {
+      Iterator localIterator = this.adapter.getList().iterator();
+      while (true)
+      {
+        if (!localIterator.hasNext())
+          return;
+        Item localItem = (Item)localIterator.next();
+        File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/" + "cache/" + localItem.getId());
+        if (localFile.exists())
+          localFile.delete();
+      }
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  public void onResume()
+  {
+    super.onResume();
+    if (this.adapter != null)
+      this.adapter.getList().clear();
+    new GetDataTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/ItemServlet" });
+  }
+
+  private class GetDataTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private GetDataTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "publish");
+        localHashMap.put("start", String.valueOf(0));
+        localHashMap.put("end", String.valueOf(1));
+        localHashMap.put("userId", String.valueOf(HavedPublishActivity.this.userId));
+        String str = Util.postRequest(HavedPublishActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+      {
+        this.progressDialog.dismiss();
+        try
+        {
+          JSONObject localJSONObject1 = new JSONObject(paramString);
+          String str = localJSONObject1.getString("info");
+          JSONArray localJSONArray;
+          int i;
+          int j;
+          if (str.equals("success"))
+          {
+            localJSONArray = localJSONObject1.getJSONArray("result");
+            i = 0;
+            if (i >= localJSONArray.length())
+            {
+              j = 0;
+              label62: if (j < HavedPublishActivity.this.adapter.getList().size())
+                break label294;
+            }
+          }
+          while (true)
+          {
+            MainFragment.setListViewChildHeight(HavedPublishActivity.this.listView);
+            HavedPublishActivity.this.adapter.notifyDataSetChanged();
+            return;
+            Item localItem = new Item();
+            JSONObject localJSONObject2 = localJSONArray.getJSONObject(i);
+            localItem.setId(localJSONObject2.getInt("id"));
+            localItem.setName(localJSONObject2.getString("name"));
+            localItem.setPrice(localJSONObject2.getDouble("price"));
+            localItem.setDescription(localJSONObject2.getString("description"));
+            localItem.setPhotoCount(localJSONObject2.getInt("photoCount"));
+            localItem.setOwnerId(localJSONObject2.getInt("ownerId"));
+            localItem.setCollectCount(localJSONObject2.getInt("collectCount"));
+            localItem.setClassfication1(localJSONObject2.getString("classfication1"));
+            localItem.setClassfication2(localJSONObject2.getString("classfication2"));
+            localItem.setStatus(localJSONObject2.getInt("status"));
+            localItem.setPhotoPathOnServer(localJSONObject2.getString("photoPath").split(","));
+            localItem.setBuyerId(localJSONObject2.getInt("buyerId"));
+            HavedPublishActivity.this.adapter.getList().add(localItem);
+            i++;
+            break;
+            label294: HavedPublishActivity.GetImageTask localGetImageTask = new HavedPublishActivity.GetImageTask(HavedPublishActivity.this);
+            Integer[] arrayOfInteger = new Integer[1];
+            arrayOfInteger[0] = Integer.valueOf(j);
+            localGetImageTask.execute(arrayOfInteger);
+            j++;
+            break label62;
+            if (str.equals("fail"))
+              Toast.makeText(HavedPublishActivity.this, "不好意思,服务器出错了", 0).show();
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return;
+        }
+      }
+      Toast.makeText(HavedPublishActivity.this, "不好意思,服务器开了小差...内容无法显示了", 0).show();
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(HavedPublishActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("获取中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+
+  class GetImageTask extends AsyncTask<Integer, Void, Bitmap>
+  {
+    GetImageTask()
+    {
+    }
+
+    public Bitmap doInBackground(Integer[] paramArrayOfInteger)
+    {
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL("http://10.96.73.76:8080/SecondHandMarket/" + ((Item)HavedPublishActivity.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getPhotoPathOnServer()[0]).openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        byte[] arrayOfByte = new byte[1024];
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        ByteArrayOutputStream localByteArrayOutputStream = new ByteArrayOutputStream();
+        while (true)
+        {
+          int i = localInputStream.read(arrayOfByte);
+          if (i == -1)
+          {
+            localInputStream.close();
+            localByteArrayOutputStream.flush();
+            if (!new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache" + "/" + ((Item)HavedPublishActivity.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getId()).exists())
+            {
+              OutputStream localOutputStream = HavedPublishActivity.this.createImageCacheFile(((Item)HavedPublishActivity.this.adapter.getList().get(paramArrayOfInteger[0].intValue())).getId());
+              localOutputStream.write(localByteArrayOutputStream.toByteArray());
+              localOutputStream.close();
+            }
+            localByteArrayOutputStream.close();
+            localHttpURLConnection.disconnect();
+            return null;
+          }
+          localByteArrayOutputStream.write(arrayOfByte, 0, i);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(Bitmap paramBitmap)
+    {
+      HavedPublishActivity.this.adapter.notifyDataSetChanged();
+    }
+  }
+}

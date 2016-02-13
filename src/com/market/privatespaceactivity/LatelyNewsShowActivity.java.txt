@@ -1,0 +1,172 @@
+package com.market.privatespaceactivity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+import com.market.activity.OtherPrivateSpaceActivity;
+import com.market.adapter2.BeAttentionedLatelyNewsListViewAdapter;
+import com.market.adapter2.HavedPublishLatelyNewsListViewAdapter;
+import com.market.adapter2.PayAttentionLatelyNewsListViewAdapter;
+import java.util.ArrayList;
+
+public class LatelyNewsShowActivity extends Activity
+{
+  private final int BE_ATTENTIONED = 1;
+  private final int HAVED_PUBLISH = 2;
+  private final int PAY_ATTENTION = 0;
+  BeAttentionedLatelyNewsListViewAdapter beAdapter;
+  int flag = -1;
+  HavedPublishLatelyNewsListViewAdapter havedPublishAdapter;
+  ListView listView;
+  PayAttentionLatelyNewsListViewAdapter publishAdapter;
+
+  public void onBackPressed()
+  {
+    switch (this.flag)
+    {
+    default:
+      return;
+    case 0:
+      Intent localIntent3 = getIntent();
+      localIntent3.putExtra("count", this.publishAdapter.getCount());
+      setResult(-1, localIntent3);
+      finish();
+      return;
+    case 1:
+      Intent localIntent2 = getIntent();
+      localIntent2.putExtra("count", this.beAdapter.getCount());
+      setResult(-1, localIntent2);
+      finish();
+      return;
+    case 2:
+    }
+    Intent localIntent1 = getIntent();
+    localIntent1.putExtra("count", this.havedPublishAdapter.getCount());
+    setResult(-1, localIntent1);
+    finish();
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903063);
+    this.listView = ((ListView)findViewById(2131034250));
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.flag = getIntent().getIntExtra("newsFlag", -1);
+    if (this.flag != -1)
+      switch (this.flag)
+      {
+      default:
+      case 0:
+      case 1:
+      case 2:
+      }
+    while (true)
+    {
+      this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+      {
+        public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+        {
+          if (LatelyNewsShowActivity.this.flag == -1)
+            return;
+          switch (LatelyNewsShowActivity.this.flag)
+          {
+          default:
+            return;
+          case 0:
+            LatelyNewsShowActivity.this.publishAdapter.publishNewsList.remove(paramAnonymousInt);
+            LatelyNewsShowActivity.this.publishAdapter.notifyDataSetChanged();
+            return;
+          case 1:
+            Intent localIntent2 = new Intent(LatelyNewsShowActivity.this, OtherPrivateSpaceActivity.class);
+            localIntent2.putExtra("name", "default");
+            LatelyNewsShowActivity.this.beAdapter.newsList.remove(paramAnonymousInt);
+            LatelyNewsShowActivity.this.beAdapter.notifyDataSetChanged();
+            LatelyNewsShowActivity.this.startActivity(localIntent2);
+            return;
+          case 2:
+          }
+          Intent localIntent1 = new Intent(LatelyNewsShowActivity.this, HavedPublishItemActivity.class);
+          LatelyNewsShowActivity.this.havedPublishAdapter.newsList.remove(paramAnonymousInt);
+          LatelyNewsShowActivity.this.havedPublishAdapter.notifyDataSetChanged();
+          LatelyNewsShowActivity.this.startActivity(localIntent1);
+        }
+      });
+      return;
+      this.publishAdapter = new PayAttentionLatelyNewsListViewAdapter(this);
+      this.listView.setAdapter(this.publishAdapter);
+      continue;
+      this.beAdapter = new BeAttentionedLatelyNewsListViewAdapter(this);
+      this.listView.setAdapter(this.beAdapter);
+      continue;
+      this.havedPublishAdapter = new HavedPublishLatelyNewsListViewAdapter(this);
+      this.listView.setAdapter(this.havedPublishAdapter);
+    }
+  }
+
+  public boolean onCreateOptionsMenu(Menu paramMenu)
+  {
+    new MenuInflater(this).inflate(2131361794, paramMenu);
+    return super.onCreateOptionsMenu(paramMenu);
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 2131034431:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      switch (this.flag)
+      {
+      case -1:
+      default:
+        break;
+      case 0:
+        this.publishAdapter.clear();
+        break;
+      case 1:
+        this.beAdapter.clear();
+        break;
+      case 2:
+        this.havedPublishAdapter.clear();
+        continue;
+        switch (this.flag)
+        {
+        default:
+          break;
+        case 0:
+          Intent localIntent3 = getIntent();
+          localIntent3.putExtra("count", this.publishAdapter.getCount());
+          setResult(-1, localIntent3);
+          finish();
+          break;
+        case 1:
+          Intent localIntent2 = getIntent();
+          localIntent2.putExtra("count", this.beAdapter.getCount());
+          setResult(-1, localIntent2);
+          finish();
+          break;
+        case 2:
+          Intent localIntent1 = getIntent();
+          localIntent1.putExtra("count", this.havedPublishAdapter.getCount());
+          setResult(-1, localIntent1);
+          finish();
+        }
+        break;
+      }
+    }
+  }
+}

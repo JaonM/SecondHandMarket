@@ -1,0 +1,49 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import java.util.ArrayList;
+
+public class PublishGridViewAdapter extends BaseAdapter
+{
+  public static ArrayList<Bitmap> images = new ArrayList();
+  public static ArrayList<Bitmap> notCompressBitmaps = new ArrayList();
+  Context mContext;
+
+  public PublishGridViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    images.add(BitmapFactory.decodeResource(this.mContext.getResources(), 2130837505));
+  }
+
+  public int getCount()
+  {
+    return images.size();
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return null;
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903096, null);
+    ImageView localImageView = (ImageView)localView.findViewById(2131034358);
+    localImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+    localImageView.setImageBitmap((Bitmap)images.get(paramInt));
+    return localView;
+  }
+}

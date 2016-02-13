@@ -1,0 +1,70 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.TextView;
+import com.market.model.Classfication;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class Classfication2GridViewAdapter extends BaseAdapter
+{
+  private List<Classfication> classficationList;
+  Context mContext;
+
+  public Classfication2GridViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    this.classficationList = new ArrayList();
+  }
+
+  public int getCount()
+  {
+    return this.classficationList.size();
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return this.classficationList.get(paramInt);
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public List<Classfication> getList()
+  {
+    return this.classficationList;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903046, null);
+    TextView localTextView = (TextView)localView.findViewById(2131034137);
+    localTextView.setText(((Classfication)this.classficationList.get(paramInt)).getClassfication2Name());
+    switch (new Random().nextInt(5))
+    {
+    default:
+      return localView;
+    case 0:
+      localTextView.setTextColor(-16777216);
+      return localView;
+    case 1:
+      localTextView.setTextColor(-16776961);
+      return localView;
+    case 2:
+      localTextView.setTextColor(-16711936);
+      return localView;
+    case 3:
+      localTextView.setTextColor(-65536);
+    case 4:
+    }
+    localTextView.setTextColor(-65281);
+    return localView;
+  }
+}

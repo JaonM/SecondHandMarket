@@ -1,0 +1,211 @@
+package com.market.privatespaceactivity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.text.Editable;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import com.market.activity.MainActivity;
+import com.market.activity.PublishFragmentClassficationActivity;
+import com.market.model.Item;
+import java.nio.charset.Charset;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+
+public class HavedPublishItemModifyActivity extends Activity
+{
+  private final int CLASSFICATION = 4;
+  TextView classfication1;
+  TextView classfication2;
+  Button classficationBtn;
+  Item item;
+  EditText itemDescText;
+  EditText itemNameText;
+  Button modifyBtn;
+  EditText priceText;
+
+  public void onActivityResult(int paramInt1, int paramInt2, Intent paramIntent)
+  {
+    super.onActivityResult(paramInt1, paramInt2, paramIntent);
+    if ((paramInt1 == 4) && (paramInt2 == -1) && (paramIntent != null))
+    {
+      String str1 = paramIntent.getStringExtra("group");
+      this.classfication1.setVisibility(0);
+      this.classfication1.setText(str1);
+      String str2 = paramIntent.getStringExtra("child");
+      this.classfication2.setVisibility(0);
+      this.classfication2.setText(str2);
+    }
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903079);
+    this.item = ((Item)getIntent().getSerializableExtra("item"));
+    this.itemNameText = ((EditText)findViewById(2131034297));
+    this.classfication1 = ((TextView)findViewById(2131034299));
+    this.classfication2 = ((TextView)findViewById(2131034300));
+    this.priceText = ((EditText)findViewById(2131034301));
+    this.itemDescText = ((EditText)findViewById(2131034302));
+    this.classficationBtn = ((Button)findViewById(2131034298));
+    this.modifyBtn = ((Button)findViewById(2131034303));
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    this.itemNameText.setText(this.item.getName());
+    this.classfication1.setText(this.item.getClassfication1());
+    this.classfication2.setText(this.item.getClassfication2());
+    this.priceText.setText(this.item.getPrice());
+    this.itemDescText.setText(this.item.getDescription());
+    this.classficationBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        Intent localIntent = new Intent(HavedPublishItemModifyActivity.this, PublishFragmentClassficationActivity.class);
+        HavedPublishItemModifyActivity.this.startActivityForResult(localIntent, 4);
+      }
+    });
+    this.modifyBtn.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        if (!MainActivity.isLogin)
+        {
+          Toast.makeText(HavedPublishItemModifyActivity.this, "还未登陆,需要先登录才能发布信息", 0).show();
+          return;
+        }
+        if (HavedPublishItemModifyActivity.this.itemNameText.getText().toString().equals(""))
+        {
+          Toast.makeText(HavedPublishItemModifyActivity.this, "物品名不能为空", 0).show();
+          return;
+        }
+        if ((HavedPublishItemModifyActivity.this.classfication1.getText().toString().equals("")) || (HavedPublishItemModifyActivity.this.classfication2.getText().toString().equals("")))
+        {
+          Toast.makeText(HavedPublishItemModifyActivity.this, "物品分类不能为空", 0).show();
+          return;
+        }
+        if (HavedPublishItemModifyActivity.this.priceText.getText().toString().equals(""))
+        {
+          Toast.makeText(HavedPublishItemModifyActivity.this, "物品价格不能为空", 0).show();
+          return;
+        }
+        if (HavedPublishItemModifyActivity.this.itemDescText.getText().toString().equals(""))
+        {
+          Toast.makeText(HavedPublishItemModifyActivity.this, "修改时,物品详情不能为空", 0).show();
+          return;
+        }
+        new HavedPublishItemModifyActivity.ModifyTask(HavedPublishItemModifyActivity.this, null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/ItemServlet" });
+      }
+    });
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class ModifyTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private ModifyTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        String str1 = HavedPublishItemModifyActivity.this.itemNameText.getText().toString();
+        String str2 = HavedPublishItemModifyActivity.this.priceText.getText().toString();
+        String str3 = HavedPublishItemModifyActivity.this.classfication1.getText().toString();
+        String str4 = HavedPublishItemModifyActivity.this.classfication2.getText().toString();
+        String str5 = HavedPublishItemModifyActivity.this.itemDescText.getText().toString();
+        DefaultHttpClient localDefaultHttpClient = new DefaultHttpClient();
+        HttpPost localHttpPost = new HttpPost(paramArrayOfString[0] + "?key=update&start=0&end=0&itemId=" + HavedPublishItemModifyActivity.this.item.getId());
+        MultipartEntity localMultipartEntity = new MultipartEntity();
+        StringBody localStringBody1 = new StringBody(str1, Charset.forName("UTF-8"));
+        StringBody localStringBody2 = new StringBody(str3, Charset.forName("UTF-8"));
+        StringBody localStringBody3 = new StringBody(str4, Charset.forName("UTF-8"));
+        StringBody localStringBody4 = new StringBody(str2, Charset.forName("UTF-8"));
+        StringBody localStringBody5 = new StringBody(str5, Charset.forName("UTF-8"));
+        localMultipartEntity.addPart("name", localStringBody1);
+        localMultipartEntity.addPart("classfication1", localStringBody2);
+        localMultipartEntity.addPart("classfication2", localStringBody3);
+        localMultipartEntity.addPart("price", localStringBody4);
+        localMultipartEntity.addPart("description", localStringBody5);
+        localHttpPost.setEntity(localMultipartEntity);
+        HttpResponse localHttpResponse = localDefaultHttpClient.execute(localHttpPost);
+        int i = localHttpResponse.getStatusLine().getStatusCode();
+        Object localObject = null;
+        if (i == 200)
+        {
+          String str6 = EntityUtils.toString(localHttpResponse.getEntity());
+          localObject = str6;
+        }
+        return localObject;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          String str = new JSONObject(paramString).getString("info");
+          this.progressDialog.dismiss();
+          if (str.equals("success"))
+          {
+            Intent localIntent = new Intent();
+            HavedPublishItemModifyActivity.this.setResult(-1, localIntent);
+            HavedPublishItemModifyActivity.this.finish();
+            return;
+          }
+          Toast.makeText(HavedPublishItemModifyActivity.this, "修改失败", 0).show();
+          return;
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(HavedPublishItemModifyActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("更新中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+}

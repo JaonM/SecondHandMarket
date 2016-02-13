@@ -1,0 +1,280 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.Toast;
+import com.market.adapter2.OtherPrivateSpaceListViewAdapter;
+import com.market.model.User;
+import com.market.privatespaceactivity.BeAttentionedActivity;
+import com.market.privatespaceactivity.HavedPublishActivity;
+import com.market.privatespaceactivity.PayAttentionActivity;
+import com.market.util.Util;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import org.json.JSONObject;
+
+public class OtherPrivateSpaceActivity extends Activity
+{
+  OtherPrivateSpaceListViewAdapter adapter;
+  ListView listView;
+  Button payAttentionButton;
+  User user;
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903074);
+    this.listView = ((ListView)findViewById(2131034286));
+    this.payAttentionButton = ((Button)findViewById(2131034287));
+    this.user = ((User)getIntent().getSerializableExtra("user"));
+    Log.v("user id", this.user.getId());
+    this.adapter = new OtherPrivateSpaceListViewAdapter(this, this.user);
+    this.listView.setAdapter(this.adapter);
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    getActionBar().setTitle(this.user.getNickName() + "的个人主页");
+    this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+    {
+      public void onItemClick(AdapterView<?> paramAnonymousAdapterView, View paramAnonymousView, int paramAnonymousInt, long paramAnonymousLong)
+      {
+        switch (paramAnonymousInt)
+        {
+        default:
+          return;
+        case 3:
+          Intent localIntent3 = new Intent(OtherPrivateSpaceActivity.this, PayAttentionActivity.class);
+          localIntent3.putExtra("payAttentionUser", OtherPrivateSpaceActivity.this.user.getNickName());
+          localIntent3.putExtra("userId", OtherPrivateSpaceActivity.this.user.getId());
+          OtherPrivateSpaceActivity.this.startActivity(localIntent3);
+          return;
+        case 4:
+          Intent localIntent2 = new Intent(OtherPrivateSpaceActivity.this, BeAttentionedActivity.class);
+          localIntent2.putExtra("beAttentionedUser", OtherPrivateSpaceActivity.this.user.getNickName());
+          localIntent2.putExtra("userId", OtherPrivateSpaceActivity.this.user.getId());
+          OtherPrivateSpaceActivity.this.startActivity(localIntent2);
+          return;
+        case 5:
+        }
+        Intent localIntent1 = new Intent(OtherPrivateSpaceActivity.this, HavedPublishActivity.class);
+        localIntent1.putExtra("havedPublishUser", OtherPrivateSpaceActivity.this.user.getNickName());
+        localIntent1.putExtra("userId", OtherPrivateSpaceActivity.this.user.getId());
+        OtherPrivateSpaceActivity.this.startActivity(localIntent1);
+      }
+    });
+    new GetRelationshipTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/RelationshipServlet" });
+    this.payAttentionButton.setClickable(false);
+    this.payAttentionButton.setOnClickListener(new View.OnClickListener()
+    {
+      public void onClick(View paramAnonymousView)
+      {
+        new OtherPrivateSpaceActivity.PayAttentionTask(OtherPrivateSpaceActivity.this, null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket/RelationshipServlet" });
+      }
+    });
+    new GetImageTask(null).execute(new String[] { "http://10.96.73.76:8080/SecondHandMarket" });
+  }
+
+  public void onDestroy()
+  {
+    super.onDestroy();
+    try
+    {
+      File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/tempUser");
+      if (localFile.exists())
+        localFile.delete();
+      return;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      finish();
+    }
+  }
+
+  private class GetImageTask extends AsyncTask<String, Void, Void>
+  {
+    private GetImageTask()
+    {
+    }
+
+    public Void doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL(paramArrayOfString[0] + "/" + OtherPrivateSpaceActivity.this.user.getPhotoPathOnServer()).openConnection();
+        localHttpURLConnection.setRequestMethod("GET");
+        InputStream localInputStream = localHttpURLConnection.getInputStream();
+        byte[] arrayOfByte = new byte[1024];
+        File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache");
+        localFile1.mkdirs();
+        File localFile2 = new File(localFile1.getCanonicalPath() + "/tempUser");
+        localFile2.createNewFile();
+        FileOutputStream localFileOutputStream = new FileOutputStream(localFile2);
+        while (true)
+        {
+          int i = localInputStream.read(arrayOfByte);
+          if (i == -1)
+          {
+            localFileOutputStream.flush();
+            localFileOutputStream.close();
+            localInputStream.close();
+            localHttpURLConnection.disconnect();
+            break;
+          }
+          localFileOutputStream.write(arrayOfByte, 0, i);
+        }
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(Void paramVoid)
+    {
+      OtherPrivateSpaceActivity.this.adapter.notifyDataSetChanged();
+    }
+  }
+
+  private class GetRelationshipTask extends AsyncTask<String, Void, String>
+  {
+    private GetRelationshipTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "relationship");
+        localHashMap.put("userId", String.valueOf(OtherPrivateSpaceActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0)));
+        localHashMap.put("otherId", String.valueOf(OtherPrivateSpaceActivity.this.user.getId()));
+        String str = Util.postRequest(OtherPrivateSpaceActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          String str = new JSONObject(paramString).getString("relation");
+          if (str.equals("1"))
+          {
+            OtherPrivateSpaceActivity.this.payAttentionButton.setText("已关注");
+            OtherPrivateSpaceActivity.this.payAttentionButton.setClickable(false);
+            return;
+          }
+          if (str.equals("0"))
+          {
+            OtherPrivateSpaceActivity.this.payAttentionButton.setText("关注Ta");
+            OtherPrivateSpaceActivity.this.payAttentionButton.setClickable(true);
+            return;
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+  }
+
+  private class PayAttentionTask extends AsyncTask<String, Void, String>
+  {
+    ProgressDialog progressDialog;
+
+    private PayAttentionTask()
+    {
+    }
+
+    public String doInBackground(String[] paramArrayOfString)
+    {
+      try
+      {
+        HashMap localHashMap = new HashMap();
+        localHashMap.put("key", "payAttention");
+        localHashMap.put("userId", String.valueOf(OtherPrivateSpaceActivity.this.getSharedPreferences("islogin", 0).getInt("userId", 0)));
+        localHashMap.put("otherId", String.valueOf(OtherPrivateSpaceActivity.this.user.getId()));
+        String str = Util.postRequest(OtherPrivateSpaceActivity.this, paramArrayOfString[0], localHashMap);
+        return str;
+      }
+      catch (Exception localException)
+      {
+        localException.printStackTrace();
+      }
+      return null;
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      if (paramString != null)
+        try
+        {
+          String str = new JSONObject(paramString).getString("info");
+          if (str.equals("success"))
+          {
+            this.progressDialog.dismiss();
+            Toast.makeText(OtherPrivateSpaceActivity.this, "关注成功", 0).show();
+            return;
+          }
+          if (str.equals("fail"))
+          {
+            this.progressDialog.dismiss();
+            Toast.makeText(OtherPrivateSpaceActivity.this, "关注失败", 0).show();
+            return;
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+        }
+    }
+
+    public void onPreExecute()
+    {
+      this.progressDialog = new ProgressDialog(OtherPrivateSpaceActivity.this);
+      this.progressDialog.setProgressStyle(0);
+      this.progressDialog.setMessage("关注中...");
+      this.progressDialog.setCancelable(false);
+      this.progressDialog.show();
+    }
+  }
+}

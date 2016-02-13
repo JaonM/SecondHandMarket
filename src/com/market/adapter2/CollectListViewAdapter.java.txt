@@ -1,0 +1,72 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.market.model.Item;
+import com.market.util.HandleBitmap;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+public class CollectListViewAdapter extends BaseAdapter
+{
+  List<Item> itemList;
+  Context mContext;
+
+  public CollectListViewAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+    this.itemList = new ArrayList();
+  }
+
+  public int getCount()
+  {
+    return this.itemList.size();
+  }
+
+  public Object getItem(int paramInt)
+  {
+    return this.itemList.get(paramInt);
+  }
+
+  public long getItemId(int paramInt)
+  {
+    return paramInt;
+  }
+
+  public List<Item> getList()
+  {
+    return this.itemList;
+  }
+
+  public View getView(int paramInt, View paramView, ViewGroup paramViewGroup)
+  {
+    View localView = LayoutInflater.from(this.mContext).inflate(2130903049, null);
+    ((TextView)localView.findViewById(2131034164)).setText(((Item)this.itemList.get(paramInt)).getName());
+    ((TextView)localView.findViewById(2131034165)).setText(((Item)this.itemList.get(paramInt)).getDescription());
+    ImageView localImageView = (ImageView)localView.findViewById(2131034162);
+    try
+    {
+      File localFile = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/" + ((Item)this.itemList.get(paramInt)).getId());
+      if (localFile.exists())
+        localImageView.setImageBitmap(HandleBitmap.convertBitmap(localFile, 100));
+      return localView;
+    }
+    catch (OutOfMemoryError localOutOfMemoryError)
+    {
+      localOutOfMemoryError.printStackTrace();
+      return localView;
+    }
+    catch (Exception localException)
+    {
+      localException.printStackTrace();
+    }
+    return localView;
+  }
+}

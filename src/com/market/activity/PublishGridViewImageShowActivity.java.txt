@@ -1,0 +1,157 @@
+package com.market.activity;
+
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import com.market.adapter2.PublishGridViewAdapter;
+import com.market.fragment.PublishFragment;
+import java.util.ArrayList;
+
+public class PublishGridViewImageShowActivity extends Activity
+{
+  private ViewPagerAdapter adapter;
+  private int currentShow = 0;
+  ArrayList<Bitmap> imagesList;
+  private boolean isHide = true;
+  ViewPager viewPager;
+  ArrayList<View> views;
+
+  private ArrayList<View> createImageViewArray()
+  {
+    ArrayList localArrayList = new ArrayList();
+    for (int i = 0; ; i++)
+    {
+      if (i >= this.imagesList.size())
+        return localArrayList;
+      ImageView localImageView = new ImageView(this);
+      localImageView.setLayoutParams(new ViewGroup.LayoutParams(-1, -2));
+      localImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+      localImageView.setImageBitmap((Bitmap)this.imagesList.get(i));
+      localArrayList.add(localImageView);
+    }
+  }
+
+  public void onCreate(Bundle paramBundle)
+  {
+    super.onCreate(paramBundle);
+    setContentView(2130903057);
+    getActionBar().hide();
+    getActionBar().setDisplayHomeAsUpEnabled(true);
+    int i = getIntent().getIntExtra("currentIndex", 0);
+    this.currentShow = i;
+    this.imagesList = PublishGridViewAdapter.notCompressBitmaps;
+    this.views = createImageViewArray();
+    this.viewPager = ((ViewPager)findViewById(2131034226));
+    this.adapter = new ViewPagerAdapter(null);
+    this.viewPager.setAdapter(this.adapter);
+    this.viewPager.setCurrentItem(i);
+    getActionBar().setTitle(i + 1 + "/" + this.imagesList.size());
+    this.viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener()
+    {
+      public void onPageScrollStateChanged(int paramAnonymousInt)
+      {
+      }
+
+      public void onPageScrolled(int paramAnonymousInt1, float paramAnonymousFloat, int paramAnonymousInt2)
+      {
+      }
+
+      public void onPageSelected(int paramAnonymousInt)
+      {
+        PublishGridViewImageShowActivity.this.getActionBar().setTitle(paramAnonymousInt + 1 + "/" + PublishGridViewImageShowActivity.this.imagesList.size());
+        PublishGridViewImageShowActivity.this.currentShow = paramAnonymousInt;
+      }
+    });
+  }
+
+  public boolean onCreateOptionsMenu(Menu paramMenu)
+  {
+    new MenuInflater(this).inflate(2131361797, paramMenu);
+    return super.onCreateOptionsMenu(paramMenu);
+  }
+
+  public boolean onOptionsItemSelected(MenuItem paramMenuItem)
+  {
+    switch (paramMenuItem.getItemId())
+    {
+    default:
+    case 2131034434:
+    case 16908332:
+    }
+    while (true)
+    {
+      return super.onOptionsItemSelected(paramMenuItem);
+      PublishGridViewAdapter.images.remove(this.currentShow);
+      PublishFragment.adapter.notifyDataSetChanged();
+      this.views.remove(this.currentShow);
+      this.imagesList.remove(this.currentShow);
+      this.adapter.notifyDataSetChanged();
+      if (this.currentShow != 0)
+        this.viewPager.setCurrentItem(-1 + this.currentShow);
+      if ((this.currentShow == 0) && (this.views.size() != 0))
+        this.viewPager.setCurrentItem(this.currentShow);
+      if (this.views.size() == 0)
+      {
+        finish();
+        continue;
+        finish();
+      }
+    }
+  }
+
+  private class ViewPagerAdapter extends PagerAdapter
+  {
+    private ViewPagerAdapter()
+    {
+    }
+
+    public void destroyItem(ViewGroup paramViewGroup, int paramInt, Object paramObject)
+    {
+      paramViewGroup.removeView((View)PublishGridViewImageShowActivity.this.views.get(paramInt));
+    }
+
+    public int getCount()
+    {
+      return PublishGridViewImageShowActivity.this.views.size();
+    }
+
+    public Object instantiateItem(ViewGroup paramViewGroup, int paramInt)
+    {
+      paramViewGroup.addView((View)PublishGridViewImageShowActivity.this.views.get(paramInt));
+      ((View)PublishGridViewImageShowActivity.this.views.get(paramInt)).setOnClickListener(new View.OnClickListener()
+      {
+        public void onClick(View paramAnonymousView)
+        {
+          if (PublishGridViewImageShowActivity.this.isHide)
+          {
+            PublishGridViewImageShowActivity.this.getActionBar().show();
+            PublishGridViewImageShowActivity.this.isHide = false;
+            return;
+          }
+          PublishGridViewImageShowActivity.this.getActionBar().hide();
+          PublishGridViewImageShowActivity.this.isHide = true;
+        }
+      });
+      return PublishGridViewImageShowActivity.this.views.get(paramInt);
+    }
+
+    public boolean isViewFromObject(View paramView, Object paramObject)
+    {
+      return paramView == paramObject;
+    }
+  }
+}

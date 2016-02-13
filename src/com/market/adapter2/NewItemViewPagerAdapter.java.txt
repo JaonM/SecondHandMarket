@@ -1,0 +1,164 @@
+package com.market.adapter2;
+
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.support.v4.view.PagerAdapter;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+import com.market.model.Advertisement;
+import com.market.util.HandleBitmap;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+public class NewItemViewPagerAdapter extends PagerAdapter
+{
+  private List<Advertisement> adList = new ArrayList();
+  Context mContext;
+  private List<View> viewList = new ArrayList();
+
+  public NewItemViewPagerAdapter(Context paramContext)
+  {
+    this.mContext = paramContext;
+  }
+
+  public void addAd(Advertisement paramAdvertisement)
+  {
+    this.adList.add(paramAdvertisement);
+    ImageView localImageView = new ImageView(this.mContext);
+    localImageView.setLayoutParams(new ViewGroup.LayoutParams(-1, -1));
+    localImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+    this.viewList.add(localImageView);
+  }
+
+  public void destroyItem(ViewGroup paramViewGroup, int paramInt, Object paramObject)
+  {
+    paramViewGroup.removeView((View)this.viewList.get(paramInt));
+  }
+
+  public int getCount()
+  {
+    return this.viewList.size();
+  }
+
+  public int getItemPosition(Object paramObject)
+  {
+    return this.viewList.indexOf(paramObject);
+  }
+
+  public List<View> getList()
+  {
+    return this.viewList;
+  }
+
+  public Object instantiateItem(ViewGroup paramViewGroup, final int paramInt)
+  {
+    paramViewGroup.addView((View)this.viewList.get(paramInt));
+    GetImageTask localGetImageTask = new GetImageTask(null);
+    Integer[] arrayOfInteger = new Integer[1];
+    arrayOfInteger[0] = Integer.valueOf(paramInt);
+    localGetImageTask.execute(arrayOfInteger);
+    try
+    {
+      Bitmap localBitmap = HandleBitmap.convertBitmap(new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/ad/" + ((Advertisement)this.adList.get(paramInt)).getId()), 300);
+      ((ImageView)this.viewList.get(paramInt)).setImageBitmap(localBitmap);
+      if (!((Advertisement)this.adList.get(paramInt)).getUrl().isEmpty())
+        ((View)this.viewList.get(paramInt)).setOnClickListener(new View.OnClickListener()
+        {
+          public void onClick(View paramAnonymousView)
+          {
+            Log.v("viewpager", "click");
+            Uri localUri = Uri.parse(((Advertisement)NewItemViewPagerAdapter.this.adList.get(paramInt)).getUrl());
+            try
+            {
+              NewItemViewPagerAdapter.this.mContext.startActivity(new Intent("android.intent.action.VIEW", localUri));
+              return;
+            }
+            catch (Exception localException)
+            {
+              localException.printStackTrace();
+            }
+          }
+        });
+      return this.viewList.get(paramInt);
+    }
+    catch (Exception localException)
+    {
+      while (true)
+        localException.printStackTrace();
+    }
+    catch (OutOfMemoryError localOutOfMemoryError)
+    {
+      while (true)
+        localOutOfMemoryError.printStackTrace();
+    }
+  }
+
+  public boolean isViewFromObject(View paramView, Object paramObject)
+  {
+    return paramView == paramObject;
+  }
+
+  private class GetImageTask extends AsyncTask<Integer, Void, String>
+  {
+    private GetImageTask()
+    {
+    }
+
+    public String doInBackground(Integer[] paramArrayOfInteger)
+    {
+      while (true)
+      {
+        FileOutputStream localFileOutputStream;
+        byte[] arrayOfByte;
+        int i;
+        try
+        {
+          HttpURLConnection localHttpURLConnection = (HttpURLConnection)new URL("http://10.96.73.76:8080/SecondHandMarket/" + ((Advertisement)NewItemViewPagerAdapter.this.adList.get(paramArrayOfInteger[0].intValue())).getPhotoPath()).openConnection();
+          localHttpURLConnection.setRequestMethod("GET");
+          InputStream localInputStream = localHttpURLConnection.getInputStream();
+          if (new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/ad/" + ((Advertisement)NewItemViewPagerAdapter.this.adList.get(paramArrayOfInteger[0].intValue())).getId()).exists())
+            return null;
+          File localFile1 = new File(Environment.getExternalStorageDirectory().getCanonicalPath() + "/SecondHandMarket/cache/ad");
+          localFile1.mkdirs();
+          File localFile2 = new File(localFile1.getAbsolutePath() + "/" + ((Advertisement)NewItemViewPagerAdapter.this.adList.get(paramArrayOfInteger[0].intValue())).getId());
+          localFile2.createNewFile();
+          localFileOutputStream = new FileOutputStream(localFile2);
+          arrayOfByte = new byte[1024];
+          i = localInputStream.read(arrayOfByte);
+          if (i == -1)
+          {
+            localFileOutputStream.flush();
+            localFileOutputStream.close();
+            localInputStream.close();
+            return null;
+          }
+        }
+        catch (Exception localException)
+        {
+          localException.printStackTrace();
+          return null;
+        }
+        localFileOutputStream.write(arrayOfByte, 0, i);
+      }
+    }
+
+    public void onPostExecute(String paramString)
+    {
+      NewItemViewPagerAdapter.this.notifyDataSetChanged();
+    }
+  }
+}
